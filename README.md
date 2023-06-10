@@ -1,2 +1,2 @@
 # Archive1
-Archive1 is created to be the final way of archiving files, specially configuration any type of documents of operational servers, by making file backup management easy and useful in case of data loss or disaster occurrence.
+Archive1 is created to be the final way of __archiving__ files, specially __configuration__ file or any type of documents on servers, by making file __backup management__ easy and useful in case of data loss or disaster occurrence.
