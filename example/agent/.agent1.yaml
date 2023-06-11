@@ -10,11 +10,11 @@ archive1_key: "thisismysampleapikeyfromarchive1"
 
 # Files that agent1 should send to archive1 server to backup temporarily
 files:
-  - path: "/absolute/path/to/file"
-    interval: "5m" # every five minutes
+  - path: "/absolute/path/to/file1"
+    interval: "1 * * * *" # use crontab style to specify interval
 
   - path: "/absolute/path/to/file2"
-    interval: "3d" # every three days
+    interval: "@daily" # every day
 
   - path: "/absolute/path/to/file3"
-    interval: "1 * * * *" # use crontab style to specify interval
+    interval: "@every 5m" # every five minutes

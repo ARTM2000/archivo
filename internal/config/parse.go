@@ -2,7 +2,7 @@ package config
 
 import "github.com/spf13/viper"
 
-func ParseYaml[T any](path string, config *T) error {
+func Parse[T any](path string, config *T) error {
 	viper.SetConfigFile(path)
 	viper.AutomaticEnv()
 

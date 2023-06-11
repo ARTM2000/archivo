@@ -18,24 +18,29 @@ var agentCmd = &cobra.Command{
 	Use:   "agent1",
 	Short: "Archive1 Agent to send specified files to Archive1 server",
 	Run: func(cmd *cobra.Command, args []string) {
-		finalConfigFile := *configFile
-		if strings.TrimSpace(finalConfigFile) == "" {
+		finalConfigFile := strings.TrimSpace(*configFile)
+		if finalConfigFile == "" {
 			// in this case, we set default configuration for config file
-			log.Default().Println("no config file path received. looking at $HOME for '.agent1.yaml'")
 			home, err := homedir.Dir()
 			if err != nil {
 				log.Fatalln(err)
 			}
+			log.Default().Printf("no config file path received. looking at '%s' for '.agent1.yaml'", home)
 			finalConfigFile = filepath.Join(home, ".agent1.yaml")
 		}
 		// check that finalConfigFile exists or not
 		if _, err := os.Stat(finalConfigFile); os.IsNotExist(err) {
-			log.Fatalf("no config file at '%s' found\nerror: %s\n", finalConfigFile, err.Error())
+			log.Fatalf("no config file at '%s' found. error: %s\n", finalConfigFile, err.Error())
 		}
 
-		config.ParseYaml[Config](finalConfigFile, &parsedConfig)
-		log.Default().Println("agent1 configuration:\n", parsedConfig.String())
+		if err := config.Parse[Config](finalConfigFile, &parsedConfig); err != nil {
+			log.Fatalf("error on reading configuration: %s", err.Error())
+		}
 
+		log.Default().Println("agent1 configuration:", parsedConfig.String())
+		if err := parsedConfig.Validate(); err != nil {
+			log.Fatalf(err.Error())
+		}
 	},
 }
 
