@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "github.com/ARTM2000/archive1/internal/agent"
 
 func main() {
-	fmt.Println("archive1 agent")
+	agent.CmdExecute()
 }

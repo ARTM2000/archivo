@@ -1,0 +1,20 @@
+###
+# This file is a example of .agent1.yaml configuration
+###
+
+# Address to target archive1 server which this agent should call
+archive1_server: "https://server.archive1.io"
+
+# Target archive1 key for this agent for oauth actions
+archive1_key: "thisismysampleapikeyfromarchive1"
+
+# Files that agent1 should send to archive1 server to backup temporarily
+files:
+  - path: "/absolute/path/to/file"
+    interval: "5m" # every five minutes
+
+  - path: "/absolute/path/to/file2"
+    interval: "3d" # every three days
+
+  - path: "/absolute/path/to/file3"
+    interval: "1 * * * *" # use crontab style to specify interval
