@@ -5,8 +5,11 @@
 # Address to target archive1 server which this agent should call
 archive1_server: "https://server.archive1.io"
 
-# Target archive1 key for this agent for oauth actions
-archive1_key: "thisismysampleapikeyfromarchive1"
+# Target archive1 name for this agent (oauth actions)
+agent_name: "example-agent"
+
+# Target archive1 key for this agent (oauth actions)
+agent_key: "thisismysampleapikeyfromarchive1"
 
 # Files that agent1 should send to archive1 server to backup temporarily
 files:

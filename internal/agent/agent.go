@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/ARTM2000/archive1/internal/config"
+	"github.com/ARTM2000/archive1/internal/processmng"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 )
@@ -33,14 +34,30 @@ var agentCmd = &cobra.Command{
 			log.Fatalf("no config file at '%s' found. error: %s\n", finalConfigFile, err.Error())
 		}
 
+		// parsing config file
 		if err := config.Parse[Config](finalConfigFile, &parsedConfig); err != nil {
 			log.Fatalf("error on reading configuration: %s", err.Error())
 		}
 
 		log.Default().Println("agent1 configuration:", parsedConfig.String())
+		// validate received config
 		if err := parsedConfig.Validate(); err != nil {
 			log.Fatalf(err.Error())
 		}
+
+		agCron, err := registerCronJobs(&parsedConfig)
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		eCh := make(chan int)
+		go processmng.OnInterrupt(func() {
+			agCron.Stop()
+			eCh <- 1
+		})
+
+		// in order to keep app running
+		<-eCh
 	},
 }
 

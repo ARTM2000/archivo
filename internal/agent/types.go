@@ -12,7 +12,7 @@ import (
 
 type File struct {
 	Path     string `mapstructure:"path" json:"path" validate:"required,filepath"`
-	Interval string `mapstructure:"interval" json:"interval" validate:"required,cron"`
+	Interval string `mapstructure:"interval" json:"interval" validate:"required"`
 }
 
 func (f *File) String() string {
@@ -47,7 +47,8 @@ func (f *File) Validate() error {
 
 type Config struct {
 	ArchiveServer string `mapstructure:"archive1_server" json:"archive1_server" validate:"required,url"`
-	ArchiveKey    string `mapstructure:"archive1_key" json:"-" validate:"required"`
+	AgentName     string `mapstructure:"agent_name" json:"agent_name" validate:"required"`
+	AgentKey      string `mapstructure:"agent_key" json:"-" validate:"required"`
 	Files         []File `mapstructure:"files" json:"files" validate:"required,min=1,dive"`
 }
 

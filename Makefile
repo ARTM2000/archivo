@@ -16,4 +16,4 @@ build_agent:
 	@go build -o ./build/agent ./cmd/agent
 
 format:
-	@gofmt -l -s -w .	
+	@gofmt -l -s -w . && go mod tidy
