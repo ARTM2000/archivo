@@ -18,7 +18,7 @@ var parsedConfig Config
 var agentCmd = &cobra.Command{
 	Use:   "agent1",
 	Short: "Archive1 Agent to send specified files to Archive1 server",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		finalConfigFile := strings.TrimSpace(*configFile)
 		if finalConfigFile == "" {
 			// in this case, we set default configuration for config file
