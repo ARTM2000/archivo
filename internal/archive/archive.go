@@ -43,6 +43,18 @@ func archiveConfigPreProcess(configPath string) {
 	log.Default().Println("configuration is valid")
 }
 
+var validateCmd = &cobra.Command{
+	Use:   "validate",
+	Short: "Validate Archive1 configuration",
+	Run: func(cmd *cobra.Command, _ []string) {
+		configPath, err := cmd.Flags().GetString("config")
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+		archiveConfigPreProcess(configPath)
+	},
+}
+
 var archiveCmd = &cobra.Command{
 	Use:   "archive1",
 	Short: "Archive1 server to store all agents files",
@@ -65,9 +77,17 @@ func init() {
 		"",
 		"archive1 server configuration (default is $HOME/.archive1.yaml)",
 	)
+
+	validateCmd.Flags().StringP(
+		"config",
+		"c",
+		"",
+		"archive1 server configuration (default is $HOME/.archive1.yaml)",
+	)
 }
 
 func CmdExecute() {
+	archiveCmd.AddCommand(validateCmd)
 	if err := archiveCmd.Execute(); err != nil {
 		log.Fatalln(err.Error())
 	}
