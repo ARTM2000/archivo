@@ -46,7 +46,7 @@ func agentConfigPreProcess(configPath string) {
 }
 
 var validateAgentCmd = &cobra.Command{
-	Use: "validate",
+	Use:   "validate",
 	Short: "Validate Agent1 configuration",
 	Run: func(cmd *cobra.Command, _ []string) {
 		configPath, err := cmd.Flags().GetString("config")
@@ -81,7 +81,6 @@ var agentCmd = &cobra.Command{
 		<-eCh
 	},
 }
-
 
 func init() {
 	agentCmd.Flags().StringP(

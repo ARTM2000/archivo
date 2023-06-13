@@ -9,6 +9,10 @@ import (
 
 var validate = validator.New()
 
+func init() {
+	validate.RegisterValidation("default", defaultTagValidate)
+}
+
 type validationError struct {
 	FailedField string `json:"field"`
 	Message     string `json:"message"`

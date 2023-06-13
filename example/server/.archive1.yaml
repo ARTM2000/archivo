@@ -1,0 +1,9 @@
+###
+# This file is a example of .archive1.yaml configuration
+###
+
+# Archive1 server host (optional. default is 0.0.0.0)
+server_host: "127.0.0.1"
+
+# Archive1 server port (optional. default is 8010)
+server_port: 5010
