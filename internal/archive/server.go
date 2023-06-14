@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ARTM2000/archive1/internal/archive/api"
-	"github.com/ARTM2000/archive1/internal/archive/auth"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -32,13 +30,15 @@ func runServer(c *Config) {
 
 			c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSONCharsetUTF8)
 
-			return c.Status(code).JSON(api.FormatResponse(c, api.Data{
+			return c.Status(code).JSON(FormatResponse(c, Data{
 				Message: err.Error(),
 				IsError: true,
 			}))
 		},
 	}
 	app := fiber.New(fConfig)
+
+	api := API{}
 
 	/**
 	 * General configuration
@@ -61,13 +61,15 @@ func runServer(c *Config) {
 	})
 
 	app.Get("/healthz", func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(api.FormatResponse(c, api.Data{
+		return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
 			Message: "everything is fine",
 		}))
 	})
 
 	app.Route("/api/v1", func(router fiber.Router) {
-		router.Route("/auth", auth.Routes)
+		router.Route("/auth", func(rt fiber.Router) {
+			rt.Post("/admin/register", api.registerAdmin)
+		})
 	}, "APIv1")
 
 	port := 8010

@@ -25,3 +25,6 @@ func (c *Config) Validate() error {
 
 	return nil
 }
+
+// API handlers (controllers) register on this struct (class)
+type API struct {}
