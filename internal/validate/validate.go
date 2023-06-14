@@ -10,7 +10,7 @@ import (
 var validate = validator.New()
 
 func init() {
-	validate.RegisterValidation("default", defaultTagValidate)
+	validate.RegisterValidation("password", validatePassword)
 }
 
 type validationError struct {

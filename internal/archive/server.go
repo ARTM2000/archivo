@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/ARTM2000/archive1/internal/archive/database"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -38,7 +39,17 @@ func runServer(c *Config) {
 	}
 	app := fiber.New(fConfig)
 
-	api := API{}
+	api := API{
+		DBM: database.NewManager(database.Config{
+			DBHost:    c.Database.Host,
+			DBPort:    c.Database.Port,
+			DBUser:    c.Database.Username,
+			DBPass:    c.Database.Password,
+			DBName:    c.Database.Name,
+			DBZone:    c.Database.Zone,
+			DBSSLMode: c.Database.SSLMode,
+		}),
+	}
 
 	/**
 	 * General configuration
@@ -54,7 +65,10 @@ func runServer(c *Config) {
 
 	app.Use(func(c *fiber.Ctx) error {
 		contentType := c.Get("Content-Type")
-		if c.Method() != "GET" && contentType != "application/json" && contentType != "multipart/form-data" {
+		if c.Method() != "GET" &&
+			c.Method() != "DELETE" &&
+			contentType != "application/json" &&
+			contentType != "multipart/form-data" {
 			return fiber.NewError(fiber.StatusBadRequest, "Request body must be in 'application/json' or 'multipart/form-data' format")
 		}
 		return c.Next()

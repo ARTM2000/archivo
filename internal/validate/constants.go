@@ -44,4 +44,5 @@ const (
 	MessageBoolean               = "%s must ba a valid Boolean"
 	MessageGroupInvalid          = "%s is invalid. must be %s"
 	MessageCron                  = "%s must be valid cron schedule"
+	MessagePassword              = "%s is not a strong password"
 )

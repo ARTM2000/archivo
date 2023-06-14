@@ -96,6 +96,8 @@ func GetValidatorErrorMessage(tag string, field string, param string, info ...st
 	// custom tag
 	case "groupinvalid":
 		return fmt.Sprintf(MessageGroupInvalid, field, info[0])
+	case "password":
+		return fmt.Sprintf(MessagePassword, field)
 
 	default:
 		fmt.Printf("not defined tag for validation in messages: %s\n", tag)

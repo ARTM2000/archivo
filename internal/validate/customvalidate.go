@@ -1,23 +1,35 @@
 package validate
 
 import (
-	"reflect"
-
-	"log"
+	"unicode"
 
 	"github.com/go-playground/validator/v10"
 )
 
-func defaultTagValidate(fl validator.FieldLevel) bool {
-	// get default value
-	defaultTagValue := fl.Param()
-	if defaultTagValue != "" {
-		// if there is no default value specified, ignore tag
-		panic("default value for validation tag 'default' not found")
+func validatePassword(fl validator.FieldLevel) bool {
+	password := fl.Field().String()
+
+	if len(password) < 8 {
+		return false
 	}
-	log.Default().Println("h > ", fl.Field(), reflect.TypeOf(fl.Field().Interface()), defaultTagValue)
-	return true
 
-	// fieldType := reflect.TypeOf(fl.Field().Interface());
+	hasUpperCase := false
+	hasLowerCase := false
+	hasDigit := false
+	hasSymbol := false
 
+	for _, c := range password {
+		switch {
+		case unicode.IsUpper(c):
+			hasUpperCase = true
+		case unicode.IsLower(c):
+			hasLowerCase = true
+		case unicode.IsDigit(c):
+			hasDigit = true
+		case unicode.IsPunct(c) || unicode.IsSymbol(c):
+			hasSymbol = true
+		}
+	}
+
+	return hasUpperCase && hasLowerCase && hasDigit && hasSymbol
 }

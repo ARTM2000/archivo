@@ -17,3 +17,6 @@ build_agent:
 
 format:
 	@gofmt -l -s -w . && go mod tidy
+
+deploy_compose_dbonly:
+	@docker-compose -f ./deployments/docker-compose.dbonly.yaml up

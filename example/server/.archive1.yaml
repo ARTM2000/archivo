@@ -3,7 +3,18 @@
 ###
 
 # Archive1 server host (optional. default is 0.0.0.0)
-server_host: "127.0.0.1"
+server_host: "0.0.0.0"
 
 # Archive1 server port (optional. default is 8010)
-server_port: 5010
+server_port: 8010
+
+# Archive1 postgres database configuration (required)
+database:
+  host: "127.0.0.1"
+  port: 5432
+  username: "postgres"
+  password: "<CHANGE-PASSWORD>"
+  timezone: "Asia/Tehran"
+  ssl_mode: false
+  ## database name
+  dbname: "archive1"
