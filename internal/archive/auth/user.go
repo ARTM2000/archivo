@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/ARTM2000/archive1/internal/archive/database"
@@ -14,7 +15,7 @@ import (
 func NewUserManager(config UserConfig, userRepo database.UserRepository) userManger {
 	return userManger{
 		userRepository: userRepo,
-		config: config,
+		config:         config,
 	}
 }
 
@@ -83,8 +84,7 @@ func (um *userManger) LoginUser(email string, password string) (string, error) {
 		"iat": now.Unix(),
 		"nbf": now.Unix(),
 		"ext": map[string]string{
-			"id":    fmt.Sprint(user.ID),
-			"email": user.Email,
+			"id": fmt.Sprint(user.ID),
 		},
 	}
 
@@ -97,4 +97,36 @@ func (um *userManger) LoginUser(email string, password string) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func (um *userManger) VerifyUserAccessToken(token string) (*database.UserSchema, error) {
+	tokenByte, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %s", t.Method.Alg())
+		}
+		return []byte(um.config.JWTSecret), nil
+	})
+
+	if err != nil {
+		log.Default().Println("error in parsing access token.", err.Error())
+		return nil, ErrUnauthorized
+	}
+
+	claims, ok := tokenByte.Claims.(jwt.MapClaims)
+	if !ok {
+		log.Default().Println("can not retrieve claims from token")
+		return nil, ErrUnauthorized
+	}
+
+	ext := claims["ext"].(map[string]interface{})
+	userIdStr := ext["id"].(string)
+	userId, _ := strconv.ParseUint(userIdStr, 10, 64)
+
+	user, err := um.userRepository.FindUserWithId(uint(userId))
+	if err != nil {
+		log.Default().Println("error in retrieving user from database", err.Error())
+		return nil, ErrUnauthorized
+	}
+
+	return user, nil
 }

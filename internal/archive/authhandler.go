@@ -3,10 +3,16 @@ package archive
 import (
 	"errors"
 	"log"
+	"strings"
 
 	"github.com/ARTM2000/archive1/internal/archive/auth"
+	"github.com/ARTM2000/archive1/internal/archive/database"
 	"github.com/ARTM2000/archive1/internal/validate"
 	"github.com/gofiber/fiber/v2"
+)
+
+const (
+	UserLocalName = "user"
 )
 
 type registerAdminDto struct {
@@ -80,6 +86,49 @@ func (api *API) loginUser(c *fiber.Ctx) error {
 		Message: "welcome",
 		Data: map[string]interface{}{
 			"access_token": token,
+		},
+	}))
+}
+
+func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
+	authHeader := c.Get(fiber.HeaderAuthorization)
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
+	}
+
+	tokenStr := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+	if tokenStr == "" {
+		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
+	}
+
+	userManager := auth.NewUserManager(
+		auth.UserConfig{
+			JWTSecret:     api.Config.Auth.JWTSecret,
+			JWTExpireTime: api.Config.Auth.JWTExpireTime,
+		},
+		api.DBM.NewUserRepository(),
+	)
+
+	user, err := userManager.VerifyUserAccessToken(tokenStr)
+	if err != nil {
+		if errors.Is(err, auth.ErrUnauthorized) {
+			return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
+		}
+		log.Default().Println("[Unhandled] error in verifying token", err.Error())
+		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
+	}
+
+	c.Locals(UserLocalName, user)
+	log.Default().Printf("request authorized. user: %+v \n", user)
+	return c.Next()
+}
+
+func (api *API) getUserInfo(c *fiber.Ctx) error {
+	user := c.Locals(UserLocalName).(*database.UserSchema)
+
+	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+		Data: map[string]interface{}{
+			"user": user,
 		},
 	}))
 }

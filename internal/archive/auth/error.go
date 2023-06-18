@@ -8,4 +8,5 @@ var (
 	ErrUserExist                  = errors.New("user exists")
 	ErrEmailOrUsernameInUse       = errors.New("email or username is used")
 	ErrEmailOrPasswordIsIncorrect = errors.New("email or password is incorrect")
+	ErrUnauthorized               = errors.New("unauthorized")
 )

@@ -80,3 +80,19 @@ func (repo *UserRepository) FindUserWithEmail(email string) (*UserSchema, error)
 
 	return &user, nil
 }
+
+func (repo *UserRepository) FindUserWithId(id uint) (*UserSchema, error) {
+	var user UserSchema
+	dbResult := repo.db.Model(&UserSchema{}).Where(UserSchema{ID: id}).First(&user)
+
+	if dbResult.Error != nil {
+		if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {
+			log.Default().Println("error in find user with email.", dbResult.Error.Error())
+			return nil, ErrRecordNotFound
+		}
+		log.Default().Println("[Unhandled] error in find user with email.", dbResult.Error.Error())
+		return nil, ErrUnhandled
+	}
+
+	return &user, nil
+}

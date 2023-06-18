@@ -83,8 +83,13 @@ func runServer(c *Config) {
 
 	app.Route("/api/v1", func(router fiber.Router) {
 		router.Route("/auth", func(rt fiber.Router) {
+			// non protected route
 			rt.Post("/admin/register", api.registerAdmin)
 			rt.Post("/login", api.loginUser)
+
+			// protected route
+			rt.Use(api.authorizationMiddleware)
+			rt.Get("/me", api.getUserInfo)
 		})
 	}, "APIv1")
 
