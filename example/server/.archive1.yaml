@@ -18,3 +18,8 @@ database:
   ssl_mode: false
   ## database name
   dbname: "archive1"
+
+auth:
+  jwt_secret: "<CHANGE-JWT-SECRET>"
+  # Example: 5m (5 minutes), 1h10m (one hour and ten minutes) 
+  jwt_expire_time: "5m"

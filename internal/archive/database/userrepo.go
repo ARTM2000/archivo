@@ -64,3 +64,19 @@ func (repo *UserRepository) CreateNewAdminUser(username string, email string, ha
 
 	return &newAdminUser, nil
 }
+
+func (repo *UserRepository) FindUserWithEmail(email string) (*UserSchema, error) {
+	var user UserSchema
+	dbResult := repo.db.Model(&UserSchema{}).Where(UserSchema{Email: email}).First(&user)
+
+	if dbResult.Error != nil {
+		if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {
+			log.Default().Println("error in find user with email.", dbResult.Error.Error())
+			return nil, ErrRecordNotFound
+		}
+		log.Default().Println("[Unhandled] error in find user with email.", dbResult.Error.Error())
+		return nil, ErrUnhandled
+	}
+
+	return &user, nil
+}

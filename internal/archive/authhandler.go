@@ -15,6 +15,11 @@ type registerAdminDto struct {
 	Password string `json:"password" validate:"required,password"`
 }
 
+type loginUserDto struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}
+
 func (api *API) registerAdmin(c *fiber.Ctx) error {
 	registerData := registerAdminDto{}
 	if err := c.BodyParser(&registerData); err != nil {
@@ -27,7 +32,7 @@ func (api *API) registerAdmin(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
 	}
 
-	userManger := auth.NewUserManager(api.DBM.NewUserRepository())
+	userManger := auth.NewUserManager(auth.UserConfig{}, api.DBM.NewUserRepository())
 	newAdmin, err := userManger.RegisterAdmin(registerData.Email, registerData.Username, registerData.Password)
 	if err != nil {
 		if errors.Is(err, auth.ErrAdminExist) {
@@ -44,5 +49,37 @@ func (api *API) registerAdmin(c *fiber.Ctx) error {
 			"admin": newAdmin,
 		},
 		Message: "new admin user created",
+	}))
+}
+
+func (api *API) loginUser(c *fiber.Ctx) error {
+	loginData := loginUserDto{}
+	if err := c.BodyParser(&loginData); err != nil {
+		log.Default().Println(err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	userManager := auth.NewUserManager(
+		auth.UserConfig{
+			JWTSecret:     api.Config.Auth.JWTSecret,
+			JWTExpireTime: api.Config.Auth.JWTExpireTime,
+		},
+		api.DBM.NewUserRepository(),
+	)
+	token, err := userManager.LoginUser(loginData.Email, loginData.Password)
+	if err != nil {
+		if errors.Is(err, auth.ErrEmailOrPasswordIsIncorrect) {
+			log.Default().Println("email or password is incorrect")
+			return fiber.NewError(fiber.StatusUnauthorized, "email or password in incorrect")
+		}
+		log.Default().Println("unhandled error", err.Error())
+		return fiber.NewError(fiber.StatusUnauthorized, "email or password in incorrect")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+		Message: "welcome",
+		Data: map[string]interface{}{
+			"access_token": token,
+		},
 	}))
 }

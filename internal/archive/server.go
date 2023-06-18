@@ -14,7 +14,7 @@ import (
 )
 
 func runServer(c *Config) {
-	fConfig := fiber.Config{
+	sConfig := fiber.Config{
 		CaseSensitive:                true,
 		ServerHeader:                 "none",
 		AppName:                      "Archive1",
@@ -37,7 +37,7 @@ func runServer(c *Config) {
 			}))
 		},
 	}
-	app := fiber.New(fConfig)
+	app := fiber.New(sConfig)
 
 	api := API{
 		DBM: database.NewManager(database.Config{
@@ -49,6 +49,7 @@ func runServer(c *Config) {
 			DBZone:    c.Database.Zone,
 			DBSSLMode: c.Database.SSLMode,
 		}),
+		Config: c,
 	}
 
 	/**
@@ -83,6 +84,7 @@ func runServer(c *Config) {
 	app.Route("/api/v1", func(router fiber.Router) {
 		router.Route("/auth", func(rt fiber.Router) {
 			rt.Post("/admin/register", api.registerAdmin)
+			rt.Post("/login", api.loginUser)
 		})
 	}, "APIv1")
 
@@ -99,4 +101,10 @@ func runServer(c *Config) {
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
+}
+
+// API handlers (controllers) register on this struct (class)
+type API struct {
+	DBM    database.Manager
+	Config *Config
 }
