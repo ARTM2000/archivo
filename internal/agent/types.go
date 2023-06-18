@@ -13,6 +13,7 @@ import (
 type File struct {
 	Path     string `mapstructure:"path" json:"path" validate:"required,filepath"`
 	Interval string `mapstructure:"interval" json:"interval" validate:"required"`
+	Rotate   int64  `mapstructure:"rotate" json:"rotate" validate:"omitempty,required,number"`
 }
 
 func (f *File) String() string {
@@ -40,6 +41,10 @@ func (f *File) Validate() error {
 	// check that received crontab is usable or not
 	if _, err := cron.ParseStandard(f.Interval); err != nil {
 		return fmt.Errorf("interval is invalid format: %s", err.Error())
+	}
+
+	if f.Rotate < 1 {
+		return fmt.Errorf("rotate should be bigger than 0")
 	}
 
 	return nil

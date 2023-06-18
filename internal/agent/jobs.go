@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/robfig/cron/v3"
@@ -49,6 +50,7 @@ func sendFileToArchive1Server(server string, name string, key string, file *File
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
+	writer.WriteField("rotate", strconv.FormatInt(file.Rotate, 10))
 	part, err := writer.CreateFormFile("file", filepath.Base(f.Name()))
 	if err != nil {
 		return fmt.Errorf("correlation-id:'%s', error: %s", correlationId, err.Error())
