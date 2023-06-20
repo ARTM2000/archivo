@@ -129,6 +129,7 @@ func (api *API) loginUser(c *fiber.Ctx) error {
 }
 
 func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
+	// todo: enable role base access control (RBAC)
 	authHeader := c.Get(fiber.HeaderAuthorization)
 	if !strings.HasPrefix(authHeader, "Bearer ") {
 		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
