@@ -88,9 +88,15 @@ func runServer(c *Config) {
 			rt.Post("/user/register", api.registerUser)
 			rt.Post("/login", api.loginUser)
 
-			// protected route
+			// protected routes
 			rt.Use(api.authorizationMiddleware)
 			rt.Get("/me", api.getUserInfo)
+		})
+
+		// protected routes
+		router.Route("/servers", func(rt fiber.Router) {
+			rt.Use(api.authorizationMiddleware)
+			rt.Post("/new", api.registerNewSourceServer)
 		})
 	}, "APIv1")
 
@@ -111,6 +117,6 @@ func runServer(c *Config) {
 
 // API handlers (controllers) register on this struct (class)
 type API struct {
-	DB    *gorm.DB
+	DB     *gorm.DB
 	Config *Config
 }

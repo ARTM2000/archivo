@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/ARTM2000/archive1/internal/archive/auth"
+	"github.com/ARTM2000/archive1/internal/archive/sourceserver"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -48,6 +49,7 @@ func NewDBConnection(dbc DBConfig) *gorm.DB {
 	// todo: make its safety more
 	db.AutoMigrate(
 		auth.UserSchema{},
+		sourceserver.SrvSchema{},
 	)
 
 	return db
