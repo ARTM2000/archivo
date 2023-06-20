@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ARTM2000/archive1/internal/archive/database"
+	"github.com/ARTM2000/archive1/internal/archive/xerrors"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func NewUserManager(config UserConfig, userRepo database.UserRepository) userManger {
+func NewUserManager(config UserConfig, userRepo UserRepository) userManger {
 	return userManger{
 		userRepository: userRepo,
 		config:         config,
@@ -25,20 +25,20 @@ type UserConfig struct {
 }
 
 type userManger struct {
-	userRepository database.UserRepository
+	userRepository UserRepository
 	config         UserConfig
 }
 
-func (um *userManger) RegisterAdmin(email string, username string, password string) (*database.UserSchema, error) {
+func (um *userManger) RegisterAdmin(email string, username string, password string) (*UserSchema, error) {
 	adminUser, err := um.userRepository.FindAdminUser()
 	if adminUser != nil {
 		log.Default().Println("admin user exists")
-		return nil, ErrAdminExist
+		return nil, xerrors.ErrAdminExist
 	}
 
-	if err != nil && !errors.Is(err, database.ErrRecordNotFound) {
+	if err != nil && !errors.Is(err, xerrors.ErrRecordNotFound) {
 		log.Default().Println("unhandled error occurs.", err.Error())
-		return nil, ErrUnhandled
+		return nil, xerrors.ErrUnhandled
 	}
 
 	// in case that no admin user exists, create new one
@@ -46,31 +46,31 @@ func (um *userManger) RegisterAdmin(email string, username string, password stri
 	passwordHash, err := bcrypt.GenerateFromPassword(passwordByte, bcrypt.DefaultCost)
 	if err != nil {
 		log.Default().Println("password hashing problem.", err.Error())
-		return nil, ErrUnhandled
+		return nil, xerrors.ErrUnhandled
 	}
 
 	newAdminUser, err := um.userRepository.CreateNewAdminUser(username, email, string(passwordHash))
 	if err != nil {
-		if errors.Is(err, database.ErrDuplicateViolation) {
-			return nil, ErrEmailOrUsernameInUse
+		if errors.Is(err, xerrors.ErrDuplicateViolation) {
+			return nil, xerrors.ErrEmailOrUsernameInUse
 		}
 
 		log.Default().Println("create admin user error.", err.Error())
-		return nil, ErrUnhandled
+		return nil, xerrors.ErrUnhandled
 	}
 
 	return newAdminUser, nil
 }
 
-func (um *userManger) RegisterUser(email string, username string, password string) (*database.UserSchema, error) {
+func (um *userManger) RegisterUser(email string, username string, password string) (*UserSchema, error) {
 	existingUser, err := um.userRepository.FindUserWithEmailOrUsername(email, username)
-	if err != nil && !errors.Is(err, database.ErrRecordNotFound) {
+	if err != nil && !errors.Is(err, xerrors.ErrRecordNotFound) {
 		log.Default().Printf("[Unhandled] error in check user existence with same username or password. error: %s", err.Error())
-		return nil, ErrUnhandled
+		return nil, xerrors.ErrUnhandled
 	}
 	if existingUser != nil {
 		log.Default().Println("user with this email or username exists")
-		return nil, ErrUserExist
+		return nil, xerrors.ErrUserExist
 	}
 
 	// in case that no admin user exists, create new one
@@ -78,17 +78,17 @@ func (um *userManger) RegisterUser(email string, username string, password strin
 	passwordHash, err := bcrypt.GenerateFromPassword(passwordByte, bcrypt.DefaultCost)
 	if err != nil {
 		log.Default().Println("password hashing problem.", err.Error())
-		return nil, ErrUnhandled
+		return nil, xerrors.ErrUnhandled
 	}
 
 	newNonAdminUser, err := um.userRepository.CreateNewNonAdminUser(username, email, string(passwordHash))
 	if err != nil {
-		if errors.Is(err, database.ErrDuplicateViolation) {
-			return nil, ErrEmailOrUsernameInUse
+		if errors.Is(err, xerrors.ErrDuplicateViolation) {
+			return nil, xerrors.ErrEmailOrUsernameInUse
 		}
 
 		log.Default().Println("create non admin user error.", err.Error())
-		return nil, ErrUnhandled
+		return nil, xerrors.ErrUnhandled
 	}
 
 	return newNonAdminUser, nil
@@ -98,16 +98,16 @@ func (um *userManger) LoginUser(email string, password string) (string, error) {
 	user, err := um.userRepository.FindUserWithEmail(email)
 	if err != nil {
 		log.Default().Println("error in finding user with email", err.Error())
-		if errors.Is(err, database.ErrRecordNotFound) {
-			return "", ErrEmailOrPasswordIsIncorrect
+		if errors.Is(err, xerrors.ErrRecordNotFound) {
+			return "", xerrors.ErrEmailOrPasswordIsIncorrect
 		}
-		return "", ErrUnhandled
+		return "", xerrors.ErrUnhandled
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(password))
 	if err != nil {
 		log.Default().Println("error in comparing password in login", err.Error())
-		return "", ErrEmailOrPasswordIsIncorrect
+		return "", xerrors.ErrEmailOrPasswordIsIncorrect
 	}
 
 	now := time.Now().UTC()
@@ -125,13 +125,13 @@ func (um *userManger) LoginUser(email string, password string) (string, error) {
 
 	if err != nil {
 		fmt.Println("error in creating token", err.Error())
-		return "", ErrUnhandled
+		return "", xerrors.ErrUnhandled
 	}
 
 	return tokenString, nil
 }
 
-func (um *userManger) VerifyUserAccessToken(token string) (*database.UserSchema, error) {
+func (um *userManger) VerifyUserAccessToken(token string) (*UserSchema, error) {
 	tokenByte, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %s", t.Method.Alg())
@@ -141,13 +141,13 @@ func (um *userManger) VerifyUserAccessToken(token string) (*database.UserSchema,
 
 	if err != nil {
 		log.Default().Println("error in parsing access token.", err.Error())
-		return nil, ErrUnauthorized
+		return nil, xerrors.ErrUnauthorized
 	}
 
 	claims, ok := tokenByte.Claims.(jwt.MapClaims)
 	if !ok {
 		log.Default().Println("can not retrieve claims from token")
-		return nil, ErrUnauthorized
+		return nil, xerrors.ErrUnauthorized
 	}
 
 	ext := claims["ext"].(map[string]interface{})
@@ -157,7 +157,7 @@ func (um *userManger) VerifyUserAccessToken(token string) (*database.UserSchema,
 	user, err := um.userRepository.FindUserWithId(uint(userId))
 	if err != nil {
 		log.Default().Println("error in retrieving user from database", err.Error())
-		return nil, ErrUnauthorized
+		return nil, xerrors.ErrUnauthorized
 	}
 
 	return user, nil

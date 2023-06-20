@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/ARTM2000/archive1/internal/archive/auth"
-	"github.com/ARTM2000/archive1/internal/archive/database"
+	"github.com/ARTM2000/archive1/internal/archive/xerrors"
 	"github.com/ARTM2000/archive1/internal/validate"
 	"github.com/gofiber/fiber/v2"
 )
@@ -44,10 +44,10 @@ func (api *API) registerAdmin(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
 	}
 
-	userManger := auth.NewUserManager(auth.UserConfig{}, api.DBM.NewUserRepository())
+	userManger := auth.NewUserManager(auth.UserConfig{}, auth.NewUserRepository(api.DB))
 	newAdmin, err := userManger.RegisterAdmin(registerData.Email, registerData.Username, registerData.Password)
 	if err != nil {
-		if errors.Is(err, auth.ErrAdminExist) {
+		if errors.Is(err, xerrors.ErrAdminExist) {
 			log.Default().Println("admin exists")
 			return fiber.NewError(fiber.StatusConflict, "admin already exists")
 		}
@@ -76,10 +76,10 @@ func (api *API) registerUser(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
 	}
 
-	userManger := auth.NewUserManager(auth.UserConfig{}, api.DBM.NewUserRepository())
+	userManger := auth.NewUserManager(auth.UserConfig{}, auth.NewUserRepository(api.DB))
 	newUser, err := userManger.RegisterUser(registerData.Email, registerData.Username, registerData.Password)
 	if err != nil {
-		if errors.Is(err, auth.ErrUserExist) {
+		if errors.Is(err, xerrors.ErrUserExist) {
 			log.Default().Println("user (non admin) exists")
 			return fiber.NewError(fiber.StatusConflict, "user with same email or username already exists")
 		}
@@ -108,11 +108,11 @@ func (api *API) loginUser(c *fiber.Ctx) error {
 			JWTSecret:     api.Config.Auth.JWTSecret,
 			JWTExpireTime: api.Config.Auth.JWTExpireTime,
 		},
-		api.DBM.NewUserRepository(),
+		auth.NewUserRepository(api.DB),
 	)
 	token, err := userManager.LoginUser(loginData.Email, loginData.Password)
 	if err != nil {
-		if errors.Is(err, auth.ErrEmailOrPasswordIsIncorrect) {
+		if errors.Is(err, xerrors.ErrEmailOrPasswordIsIncorrect) {
 			log.Default().Println("email or password is incorrect")
 			return fiber.NewError(fiber.StatusUnauthorized, "email or password in incorrect")
 		}
@@ -144,12 +144,12 @@ func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
 			JWTSecret:     api.Config.Auth.JWTSecret,
 			JWTExpireTime: api.Config.Auth.JWTExpireTime,
 		},
-		api.DBM.NewUserRepository(),
+		auth.NewUserRepository(api.DB),
 	)
 
 	user, err := userManager.VerifyUserAccessToken(tokenStr)
 	if err != nil {
-		if errors.Is(err, auth.ErrUnauthorized) {
+		if errors.Is(err, xerrors.ErrUnauthorized) {
 			return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
 		}
 		log.Default().Println("[Unhandled] error in verifying token", err.Error())
@@ -162,7 +162,7 @@ func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
 }
 
 func (api *API) getUserInfo(c *fiber.Ctx) error {
-	user := c.Locals(UserLocalName).(*database.UserSchema)
+	user := c.Locals(UserLocalName).(*auth.UserSchema)
 
 	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
 		Data: map[string]interface{}{

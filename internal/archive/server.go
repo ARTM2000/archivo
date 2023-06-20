@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ARTM2000/archive1/internal/archive/database"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"gorm.io/gorm"
 )
 
 func runServer(c *Config) {
@@ -40,7 +40,7 @@ func runServer(c *Config) {
 	app := fiber.New(sConfig)
 
 	api := API{
-		DBM: database.NewManager(database.Config{
+		DB: NewDBConnection(DBConfig{
 			DBHost:    c.Database.Host,
 			DBPort:    c.Database.Port,
 			DBUser:    c.Database.Username,
@@ -111,6 +111,6 @@ func runServer(c *Config) {
 
 // API handlers (controllers) register on this struct (class)
 type API struct {
-	DBM    database.Manager
+	DB    *gorm.DB
 	Config *Config
 }

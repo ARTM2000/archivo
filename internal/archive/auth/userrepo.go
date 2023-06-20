@@ -1,10 +1,11 @@
-package database
+package auth
 
 import (
 	"errors"
 	"log"
 	"time"
 
+	"github.com/ARTM2000/archive1/internal/archive/xerrors"
 	"gorm.io/gorm"
 )
 
@@ -19,9 +20,9 @@ type UserSchema struct {
 	DeletedAt      gorm.DeletedAt `json:"-"`
 }
 
-func (dbm *Manager) NewUserRepository() UserRepository {
+func NewUserRepository(db *gorm.DB) UserRepository {
 	return UserRepository{
-		db: dbm.db,
+		db: db,
 	}
 }
 
@@ -35,10 +36,10 @@ func (repo *UserRepository) FindAdminUser() (*UserSchema, error) {
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {
 			log.Default().Println("error in find admin user.", dbResult.Error.Error())
-			return nil, ErrRecordNotFound
+			return nil, xerrors.ErrRecordNotFound
 		}
 		log.Default().Println("[Unhandled] error in find admin user.", dbResult.Error.Error())
-		return nil, ErrUnhandled
+		return nil, xerrors.ErrUnhandled
 	}
 
 	return &adminUser, nil
@@ -56,10 +57,10 @@ func (repo *UserRepository) CreateNewAdminUser(username string, email string, ha
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrDuplicatedKey) {
 			log.Default().Println("error in create admin user.", dbResult.Error.Error())
-			return nil, ErrDuplicateViolation
+			return nil, xerrors.ErrDuplicateViolation
 		}
 		log.Default().Println("[Unhandled] error in create admin user.", dbResult.Error.Error())
-		return nil, ErrUnhandled
+		return nil, xerrors.ErrUnhandled
 	}
 
 	return &newAdminUser, nil
@@ -77,10 +78,10 @@ func (repo *UserRepository) CreateNewNonAdminUser(username string, email string,
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrDuplicatedKey) {
 			log.Default().Println("error in create admin user.", dbResult.Error.Error())
-			return nil, ErrDuplicateViolation
+			return nil, xerrors.ErrDuplicateViolation
 		}
 		log.Default().Println("[Unhandled] error in create admin user.", dbResult.Error.Error())
-		return nil, ErrUnhandled
+		return nil, xerrors.ErrUnhandled
 	}
 
 	return &newNonAdminUser, nil
@@ -93,10 +94,10 @@ func (repo *UserRepository) FindUserWithEmail(email string) (*UserSchema, error)
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {
 			log.Default().Println("error in find user with email.", dbResult.Error.Error())
-			return nil, ErrRecordNotFound
+			return nil, xerrors.ErrRecordNotFound
 		}
 		log.Default().Println("[Unhandled] error in find user with email.", dbResult.Error.Error())
-		return nil, ErrUnhandled
+		return nil, xerrors.ErrUnhandled
 	}
 
 	return &user, nil
@@ -109,10 +110,10 @@ func (repo *UserRepository) FindUserWithEmailOrUsername(email string, username s
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {
 			log.Default().Println("error in find user with email.", dbResult.Error.Error())
-			return nil, ErrRecordNotFound
+			return nil, xerrors.ErrRecordNotFound
 		}
 		log.Default().Println("[Unhandled] error in find user with email.", dbResult.Error.Error())
-		return nil, ErrUnhandled
+		return nil, xerrors.ErrUnhandled
 	}
 
 	return &user, nil
@@ -125,10 +126,10 @@ func (repo *UserRepository) FindUserWithId(id uint) (*UserSchema, error) {
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {
 			log.Default().Println("error in find user with email.", dbResult.Error.Error())
-			return nil, ErrRecordNotFound
+			return nil, xerrors.ErrRecordNotFound
 		}
 		log.Default().Println("[Unhandled] error in find user with email.", dbResult.Error.Error())
-		return nil, ErrUnhandled
+		return nil, xerrors.ErrUnhandled
 	}
 
 	return &user, nil

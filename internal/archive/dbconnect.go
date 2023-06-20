@@ -1,15 +1,16 @@
-package database
+package archive
 
 import (
 	"fmt"
 	"log"
 
+	"github.com/ARTM2000/archive1/internal/archive/auth"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-type Config struct {
+type DBConfig struct {
 	DBHost    string
 	DBPort    int
 	DBUser    string
@@ -19,11 +20,7 @@ type Config struct {
 	DBSSLMode bool
 }
 
-type Manager struct {
-	db *gorm.DB
-}
-
-func NewManager(dbc Config) Manager {
+func NewDBConnection(dbc DBConfig) *gorm.DB {
 	sslMode := "disable"
 	if dbc.DBSSLMode {
 		sslMode = "enable"
@@ -50,10 +47,8 @@ func NewManager(dbc Config) Manager {
 	// auto migration.
 	// todo: make its safety more
 	db.AutoMigrate(
-		UserSchema{},
+		auth.UserSchema{},
 	)
 
-	return Manager{
-		db,
-	}
+	return db
 }
