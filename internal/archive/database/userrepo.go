@@ -65,9 +65,46 @@ func (repo *UserRepository) CreateNewAdminUser(username string, email string, ha
 	return &newAdminUser, nil
 }
 
+func (repo *UserRepository) CreateNewNonAdminUser(username string, email string, hashedPassword string) (*UserSchema, error) {
+	var newNonAdminUser = UserSchema{
+		Username:       username,
+		Email:          email,
+		HashedPassword: hashedPassword,
+		IsAdmin:        false,
+	}
+	dbResult := repo.db.Model(&UserSchema{}).Create(&newNonAdminUser)
+
+	if dbResult.Error != nil {
+		if errors.Is(dbResult.Error, gorm.ErrDuplicatedKey) {
+			log.Default().Println("error in create admin user.", dbResult.Error.Error())
+			return nil, ErrDuplicateViolation
+		}
+		log.Default().Println("[Unhandled] error in create admin user.", dbResult.Error.Error())
+		return nil, ErrUnhandled
+	}
+
+	return &newNonAdminUser, nil
+}
+
 func (repo *UserRepository) FindUserWithEmail(email string) (*UserSchema, error) {
 	var user UserSchema
 	dbResult := repo.db.Model(&UserSchema{}).Where(UserSchema{Email: email}).First(&user)
+
+	if dbResult.Error != nil {
+		if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {
+			log.Default().Println("error in find user with email.", dbResult.Error.Error())
+			return nil, ErrRecordNotFound
+		}
+		log.Default().Println("[Unhandled] error in find user with email.", dbResult.Error.Error())
+		return nil, ErrUnhandled
+	}
+
+	return &user, nil
+}
+
+func (repo *UserRepository) FindUserWithEmailOrUsername(email string, username string) (*UserSchema, error) {
+	var user UserSchema
+	dbResult := repo.db.Model(&UserSchema{}).Where(UserSchema{Email: email}).Or(UserSchema{Username: username}).First(&user)
 
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {

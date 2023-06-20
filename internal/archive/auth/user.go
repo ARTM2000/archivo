@@ -62,6 +62,38 @@ func (um *userManger) RegisterAdmin(email string, username string, password stri
 	return newAdminUser, nil
 }
 
+func (um *userManger) RegisterUser(email string, username string, password string) (*database.UserSchema, error) {
+	existingUser, err := um.userRepository.FindUserWithEmailOrUsername(email, username)
+	if err != nil && !errors.Is(err, database.ErrRecordNotFound) {
+		log.Default().Printf("[Unhandled] error in check user existence with same username or password. error: %s", err.Error())
+		return nil, ErrUnhandled
+	}
+	if existingUser != nil {
+		log.Default().Println("user with this email or username exists")
+		return nil, ErrUserExist
+	}
+
+	// in case that no admin user exists, create new one
+	passwordByte := []byte(password)
+	passwordHash, err := bcrypt.GenerateFromPassword(passwordByte, bcrypt.DefaultCost)
+	if err != nil {
+		log.Default().Println("password hashing problem.", err.Error())
+		return nil, ErrUnhandled
+	}
+
+	newNonAdminUser, err := um.userRepository.CreateNewNonAdminUser(username, email, string(passwordHash))
+	if err != nil {
+		if errors.Is(err, database.ErrDuplicateViolation) {
+			return nil, ErrEmailOrUsernameInUse
+		}
+
+		log.Default().Println("create non admin user error.", err.Error())
+		return nil, ErrUnhandled
+	}
+
+	return newNonAdminUser, nil
+}
+
 func (um *userManger) LoginUser(email string, password string) (string, error) {
 	user, err := um.userRepository.FindUserWithEmail(email)
 	if err != nil {

@@ -21,6 +21,12 @@ type registerAdminDto struct {
 	Password string `json:"password" validate:"required,password"`
 }
 
+type registerUserDto struct {
+	Email    string `json:"email" validate:"required,email"`
+	Username string `json:"username" validate:"required,alphanum"`
+	Password string `json:"password" validate:"required,password"`
+}
+
 type loginUserDto struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
@@ -46,7 +52,7 @@ func (api *API) registerAdmin(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusConflict, "admin already exists")
 		}
 
-		log.Default().Println("unhandled error from adminManager")
+		log.Default().Println("unhandled error from userManager")
 		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
 	}
 
@@ -55,6 +61,38 @@ func (api *API) registerAdmin(c *fiber.Ctx) error {
 			"admin": newAdmin,
 		},
 		Message: "new admin user created",
+	}))
+}
+
+func (api *API) registerUser(c *fiber.Ctx) error {
+	registerData := registerUserDto{}
+	if err := c.BodyParser(&registerData); err != nil {
+		log.Default().Println(err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	if errs, ok := validate.ValidateStruct[registerUserDto](&registerData); !ok {
+		log.Default().Println(errs[0].Message)
+		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
+	}
+
+	userManger := auth.NewUserManager(auth.UserConfig{}, api.DBM.NewUserRepository())
+	newUser, err := userManger.RegisterUser(registerData.Email, registerData.Username, registerData.Password)
+	if err != nil {
+		if errors.Is(err, auth.ErrUserExist) {
+			log.Default().Println("user (non admin) exists")
+			return fiber.NewError(fiber.StatusConflict, "user with same email or username already exists")
+		}
+
+		log.Default().Println("unhandled error from userManager", err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+		Message: "new user registered",
+		Data: map[string]interface{}{
+			"user": newUser,
+		},
 	}))
 }
 

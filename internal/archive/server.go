@@ -85,6 +85,7 @@ func runServer(c *Config) {
 		router.Route("/auth", func(rt fiber.Router) {
 			// non protected route
 			rt.Post("/admin/register", api.registerAdmin)
+			rt.Post("/user/register", api.registerUser)
 			rt.Post("/login", api.loginUser)
 
 			// protected route
