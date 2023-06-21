@@ -29,7 +29,7 @@ type userManger struct {
 	config         UserConfig
 }
 
-func (um *userManger) RegisterAdmin(email string, username string, password string) (*UserSchema, error) {
+func (um *userManger) RegisterAdmin(email string, username string, password string) (*User, error) {
 	adminUser, err := um.userRepository.FindAdminUser()
 	if adminUser != nil {
 		log.Default().Println("admin user exists")
@@ -62,7 +62,7 @@ func (um *userManger) RegisterAdmin(email string, username string, password stri
 	return newAdminUser, nil
 }
 
-func (um *userManger) RegisterUser(email string, username string, password string) (*UserSchema, error) {
+func (um *userManger) RegisterUser(email string, username string, password string) (*User, error) {
 	existingUser, err := um.userRepository.FindUserWithEmailOrUsername(email, username)
 	if err != nil && !errors.Is(err, xerrors.ErrRecordNotFound) {
 		log.Default().Printf("[Unhandled] error in check user existence with same username or password. error: %s", err.Error())
@@ -131,7 +131,7 @@ func (um *userManger) LoginUser(email string, password string) (string, error) {
 	return tokenString, nil
 }
 
-func (um *userManger) VerifyUserAccessToken(token string) (*UserSchema, error) {
+func (um *userManger) VerifyUserAccessToken(token string) (*User, error) {
 	tokenByte, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %s", t.Method.Alg())

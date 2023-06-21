@@ -19,7 +19,7 @@ func NewSrvManager(srvRepo SrvRepository) SrvManager {
 }
 
 type newSrvSrcResult struct {
-	NewServer *SrvSchema
+	NewServer *SourceServer
 	APIKey    string
 }
 

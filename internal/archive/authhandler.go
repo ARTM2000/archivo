@@ -163,7 +163,7 @@ func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
 }
 
 func (api *API) getUserInfo(c *fiber.Ctx) error {
-	user := c.Locals(UserLocalName).(*auth.UserSchema)
+	user := c.Locals(UserLocalName).(*auth.User)
 
 	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
 		Data: map[string]interface{}{

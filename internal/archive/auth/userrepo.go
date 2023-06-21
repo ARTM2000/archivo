@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserSchema struct {
+type User struct {
 	ID             uint           `gorm:"primaryKey;unique" json:"id"`
 	Username       string         `gorm:"type:string;not null;unique" json:"username"`
 	Email          string         `gorm:"type:string;not null;unique" json:"email"`
@@ -30,9 +30,9 @@ type UserRepository struct {
 	db *gorm.DB
 }
 
-func (repo *UserRepository) FindAdminUser() (*UserSchema, error) {
-	var adminUser UserSchema
-	dbResult := repo.db.Model(&UserSchema{}).Where(UserSchema{IsAdmin: true}).First(&adminUser)
+func (repo *UserRepository) FindAdminUser() (*User, error) {
+	var adminUser User
+	dbResult := repo.db.Model(&User{}).Where(User{IsAdmin: true}).First(&adminUser)
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {
 			log.Default().Println("error in find admin user.", dbResult.Error.Error())
@@ -45,14 +45,14 @@ func (repo *UserRepository) FindAdminUser() (*UserSchema, error) {
 	return &adminUser, nil
 }
 
-func (repo *UserRepository) CreateNewAdminUser(username string, email string, hashedPassword string) (*UserSchema, error) {
-	var newAdminUser = UserSchema{
+func (repo *UserRepository) CreateNewAdminUser(username string, email string, hashedPassword string) (*User, error) {
+	var newAdminUser = User{
 		Username:       username,
 		Email:          email,
 		HashedPassword: hashedPassword,
 		IsAdmin:        true,
 	}
-	dbResult := repo.db.Model(&UserSchema{}).Create(&newAdminUser)
+	dbResult := repo.db.Model(&User{}).Create(&newAdminUser)
 
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrDuplicatedKey) {
@@ -66,14 +66,14 @@ func (repo *UserRepository) CreateNewAdminUser(username string, email string, ha
 	return &newAdminUser, nil
 }
 
-func (repo *UserRepository) CreateNewNonAdminUser(username string, email string, hashedPassword string) (*UserSchema, error) {
-	var newNonAdminUser = UserSchema{
+func (repo *UserRepository) CreateNewNonAdminUser(username string, email string, hashedPassword string) (*User, error) {
+	var newNonAdminUser = User{
 		Username:       username,
 		Email:          email,
 		HashedPassword: hashedPassword,
 		IsAdmin:        false,
 	}
-	dbResult := repo.db.Model(&UserSchema{}).Create(&newNonAdminUser)
+	dbResult := repo.db.Model(&User{}).Create(&newNonAdminUser)
 
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrDuplicatedKey) {
@@ -87,9 +87,9 @@ func (repo *UserRepository) CreateNewNonAdminUser(username string, email string,
 	return &newNonAdminUser, nil
 }
 
-func (repo *UserRepository) FindUserWithEmail(email string) (*UserSchema, error) {
-	var user UserSchema
-	dbResult := repo.db.Model(&UserSchema{}).Where(UserSchema{Email: email}).First(&user)
+func (repo *UserRepository) FindUserWithEmail(email string) (*User, error) {
+	var user User
+	dbResult := repo.db.Model(&User{}).Where(User{Email: email}).First(&user)
 
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {
@@ -103,9 +103,9 @@ func (repo *UserRepository) FindUserWithEmail(email string) (*UserSchema, error)
 	return &user, nil
 }
 
-func (repo *UserRepository) FindUserWithEmailOrUsername(email string, username string) (*UserSchema, error) {
-	var user UserSchema
-	dbResult := repo.db.Model(&UserSchema{}).Where(UserSchema{Email: email}).Or(UserSchema{Username: username}).First(&user)
+func (repo *UserRepository) FindUserWithEmailOrUsername(email string, username string) (*User, error) {
+	var user User
+	dbResult := repo.db.Model(&User{}).Where(User{Email: email}).Or(User{Username: username}).First(&user)
 
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {
@@ -119,9 +119,9 @@ func (repo *UserRepository) FindUserWithEmailOrUsername(email string, username s
 	return &user, nil
 }
 
-func (repo *UserRepository) FindUserWithId(id uint) (*UserSchema, error) {
-	var user UserSchema
-	dbResult := repo.db.Model(&UserSchema{}).Where(UserSchema{ID: id}).First(&user)
+func (repo *UserRepository) FindUserWithId(id uint) (*User, error) {
+	var user User
+	dbResult := repo.db.Model(&User{}).Where(User{ID: id}).First(&user)
 
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {

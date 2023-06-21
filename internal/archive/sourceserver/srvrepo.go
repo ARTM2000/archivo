@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type SrvSchema struct {
+type SourceServer struct {
 	ID           uint   `gorm:"primaryKey;not null" json:"id"`
 	Name         string `gorm:"type:string;not null;unique" json:"name"`
 	HashedAPIKey string `gorm:"type:string;not null" json:"-"`
@@ -24,9 +24,9 @@ type SrvRepository struct {
 	db *gorm.DB
 }
 
-func (sr *SrvRepository) FindSrvWithName(name string) (*SrvSchema, error) {
-	var srv SrvSchema
-	dbResult := sr.db.Model(&SrvSchema{}).Where(SrvSchema{Name: name}).First(&srv)
+func (sr *SrvRepository) FindSrvWithName(name string) (*SourceServer, error) {
+	var srv SourceServer
+	dbResult := sr.db.Model(&SourceServer{}).Where(SourceServer{Name: name}).First(&srv)
 
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {
@@ -41,12 +41,12 @@ func (sr *SrvRepository) FindSrvWithName(name string) (*SrvSchema, error) {
 	return &srv, nil
 }
 
-func (sr *SrvRepository) CreateNewSrv(name string, hashedAPIKey string) (*SrvSchema, error) {
-	var newSrv = SrvSchema{
+func (sr *SrvRepository) CreateNewSrv(name string, hashedAPIKey string) (*SourceServer, error) {
+	var newSrv = SourceServer{
 		Name:         name,
 		HashedAPIKey: hashedAPIKey,
 	}
-	dbResult := sr.db.Model(&SrvSchema{}).Create(&newSrv)
+	dbResult := sr.db.Model(&SourceServer{}).Create(&newSrv)
 
 	if dbResult.Error != nil {
 		if errors.Is(dbResult.Error, gorm.ErrDuplicatedKey) {
