@@ -1,6 +1,7 @@
 tmp
 build
 example/_
+_
 
 *.env
 !*.env.*

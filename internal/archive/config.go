@@ -25,14 +25,14 @@ type Auth struct {
 }
 
 type FileStore struct {
-	Mode       string         `mapstructure:"mode" json:"mode" validate:"required,eq=disk|eq=minio"`
-	DiskConfig *DiskFileStore `mapstructure:"disk_config" json:"disk_config" validate:"omitempty,required,dive"`
+	Mode       string        `mapstructure:"mode" json:"mode" validate:"required,eq=disk|eq=minio"`
+	DiskConfig DiskFileStore `mapstructure:"disk_config" json:"disk_config" validate:"omitempty,required,dive"`
 }
 
 func (fs *FileStore) Validate() error {
 	switch fs.Mode {
 	case "disk":
-		if fs.DiskConfig == nil {
+		if fs.DiskConfig == (DiskFileStore{}) {
 			return fmt.Errorf("for disk mode, disk_config is required")
 		}
 		pathD, err := os.Stat(fs.DiskConfig.Path)
@@ -57,7 +57,7 @@ func (fs *FileStore) Validate() error {
 }
 
 type DiskFileStore struct {
-	Path string `mapstructure:"path" json:"path" validate:"required,filepath"`
+	Path string `mapstructure:"path" json:"path" validate:"required,dir"`
 }
 
 type Config struct {
@@ -65,7 +65,7 @@ type Config struct {
 	ServerHost *string   `mapstructure:"server_host" json:"server_host" validate:"omitempty,hostname|ip"`
 	Database   Database  `mapstructure:"database" json:"database" validate:"required,dive"`
 	Auth       Auth      `mapstructure:"auth" json:"auth" validate:"required,dive"`
-	FileStore  FileStore `mapstructure:"file_store" json:"file_store" validate:"required,dive"`
+	FileStore  FileStore `mapstructure:"file_store" json:"file_store" validate:"required"`
 }
 
 func (c *Config) String() string {

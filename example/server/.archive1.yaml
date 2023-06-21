@@ -23,3 +23,8 @@ auth:
   jwt_secret: "<CHANGE-JWT-SECRET>"
   # Example: 5m (5 minutes), 1h10m (one hour and ten minutes) 
   jwt_expire_time: "5m"
+
+file_store:
+  mode: "disk"
+  disk_config:
+    path: "/usr/archive1"

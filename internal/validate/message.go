@@ -92,6 +92,10 @@ func GetValidatorErrorMessage(tag string, field string, param string, info ...st
 		return fmt.Sprintf(MessageBoolean, field)
 	case "cron":
 		return fmt.Sprintf(MessageCron, field)
+	case "dirpath":
+		return fmt.Sprintf(MessageDirPath, field)
+	case "dir":
+		return fmt.Sprintf(MessageDir, field)
 
 	// custom tag
 	case "groupinvalid":
