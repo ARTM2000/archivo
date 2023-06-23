@@ -12,4 +12,6 @@ var (
 	ErrEmailOrPasswordIsIncorrect     = errors.New("email or password is incorrect")
 	ErrUnauthorized                   = errors.New("unauthorized")
 	ErrSourceServerWithThisNameExists = errors.New("source server with this name exists")
+	ErrUnableToCreateStoreDirectory   = errors.New("unable to create store directory")
+	ErrStorePathExistButNotADirectory = errors.New("store path exists but is not a directory")
 )

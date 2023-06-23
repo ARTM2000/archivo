@@ -65,13 +65,7 @@ func runServer(c *Config) {
 	app.Use(helmet.New())
 
 	app.Use(func(c *fiber.Ctx) error {
-		contentType := c.Get("Content-Type")
-		if c.Method() != "GET" &&
-			c.Method() != "DELETE" &&
-			contentType != "application/json" &&
-			contentType != "multipart/form-data" {
-			return fiber.NewError(fiber.StatusBadRequest, "Request body must be in 'application/json' or 'multipart/form-data' format")
-		}
+		c.Accepts(fiber.MIMEApplicationJSON,fiber.MIMEMultipartForm)
 		return c.Next()
 	})
 
@@ -94,9 +88,13 @@ func runServer(c *Config) {
 		})
 
 		// protected routes
-		router.Route("/servers", func(rt fiber.Router) {
-			rt.Use(api.authorizationMiddleware)
-			rt.Post("/new", api.registerNewSourceServer)
+		router.Route("/servers", func(rtr fiber.Router) {
+			rtr.Route("/store", func(rt fiber.Router) {
+				rt.Use(api.authorizeSourceServerMiddleware)
+				rt.Post("/file", api.rotateSrcSrvFile)
+			})
+			rtr.Use(api.authorizationMiddleware)
+			rtr.Post("/new", api.registerNewSourceServer)
 		})
 	}, "APIv1")
 

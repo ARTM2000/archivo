@@ -7,13 +7,15 @@ import (
 	"encoding/hex"
 	"errors"
 	"log"
+	"mime/multipart"
 	"strings"
 
 	"github.com/ARTM2000/archive1/internal/archive/xerrors"
 )
 
-func NewSrvManager(srvRepo SrvRepository) SrvManager {
+func NewSrvManager(config SrvConfig, srvRepo SrvRepository) SrvManager {
 	return SrvManager{
+		config:        config,
 		srvRepository: srvRepo,
 	}
 }
@@ -23,24 +25,30 @@ type newSrvSrcResult struct {
 	APIKey    string
 }
 
+type SrvConfig struct {
+	CorrelationId   string
+	StoreMode       string
+	DiskStoreConfig DiskStoreConfig
+}
+
 type SrvManager struct {
+	config        SrvConfig
 	srvRepository SrvRepository
 }
 
-func (sm *SrvManager) generateAPIKey() (string, error) {
-	// Define the length of the API key
-	const apiKeyLength = 64
+type StoreManager interface {
+	FileStore(srcSrvName string, fileName string, file *multipart.FileHeader, correlationId string) error
+	FileRotate(srcSrvName string, fileName string, rotate uint64, correlationId string) error
+}
 
-	// Generate a random byte slice with the specified length
+func (sm *SrvManager) generateAPIKey() (string, error) {
+	const apiKeyLength = 64
 	apiKeyBytes := make([]byte, apiKeyLength)
 	if _, err := rand.Read(apiKeyBytes); err != nil {
 		return "", err
 	}
 
-	// Encode the byte slice as a base64 string
 	apiKey := base64.RawURLEncoding.EncodeToString(apiKeyBytes)
-
-	// Replace any "+" and "/" characters with alphanumeric characters
 	apiKey = strings.Map(func(r rune) rune {
 		switch {
 		case r == '+':
@@ -93,4 +101,67 @@ func (sm *SrvManager) RegisterNewSourceServer(name string) (*newSrvSrcResult, er
 		APIKey:    newSrvAPIKey,
 		NewServer: newSrvServer,
 	}, nil
+}
+
+func (sm *SrvManager) AuthorizeSourceServer(srcSrvName string, apiKey string) (*SourceServer, error) {
+	srv, err := sm.srvRepository.FindSrvWithName(srcSrvName)
+	if err != nil {
+		if errors.Is(err, xerrors.ErrRecordNotFound) {
+			log.Default().Printf("source server with name '%s' not exists\n", srcSrvName)
+			return nil, xerrors.ErrUnauthorized
+		}
+
+		log.Default().Printf("[Unhandled] finding source server with name '%s' failed, error: %s", srcSrvName, err.Error())
+		return nil, xerrors.ErrUnauthorized
+	}
+
+	receivedAPIKeyHashByte := sha256.Sum256([]byte(apiKey))
+	receivedAPIKeyHash := hex.EncodeToString(receivedAPIKeyHashByte[:])
+
+	if srv.HashedAPIKey != receivedAPIKeyHash {
+		log.Default().Printf(
+			"received api key is not valid, receivedHash: '%s' storedHash: '%s'",
+			receivedAPIKeyHash,
+			srv.HashedAPIKey,
+		)
+		return nil, xerrors.ErrUnauthorized
+	}
+
+	return srv, nil
+}
+
+func (sm *SrvManager) getStoreManager() StoreManager {
+	switch sm.config.StoreMode {
+	case "disk":
+		return NewDiskStore(DiskStoreConfig{
+			Path: sm.config.DiskStoreConfig.Path,
+		})
+	default:
+		log.Fatalln("store not defined")
+		return nil
+	}
+}
+
+func (sm *SrvManager) RotateFile(srcSrv *SourceServer, rotate int64, fileName string, file *multipart.FileHeader) error {
+	storeManager := sm.getStoreManager()
+	// make sure of final filename
+	fnFilename := fileName
+	if strings.TrimSpace(fnFilename) == "" {
+		fnFilename = file.Filename
+	}
+
+	log.Default().Printf(
+		"storing file '%s' for source server '%s' with correlationId '%s'\n", 
+		fnFilename, 
+		srcSrv.Name, 
+		sm.config.CorrelationId,
+	)
+
+	err := storeManager.FileStore(srcSrv.Name, fnFilename, file, sm.config.CorrelationId)
+	if err != nil {
+		log.Default().Printf("error in file store, source server name: '%s' correlationId: '%s', error: %s", srcSrv.Name, sm.config.CorrelationId, err.Error())
+		return err
+	}
+
+	return nil
 }
