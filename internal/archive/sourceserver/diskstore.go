@@ -41,11 +41,9 @@ func (ds *DiskStore) FileStore(srcSrvName string, fileName string, file *multipa
 				log.Default().Println(err.Error())
 				return xerrors.ErrUnableToCreateStoreDirectory
 			}
-		}
-
-		if !spData.IsDir() {
+		} else if !spData.IsDir() {
 			log.Default().Printf(
-				"error in creating store path for source server '%s' filename '%s' correlationId '%s' store path exists and not a directory\n",
+				"error in creating store path for source server '%s' filename '%s' correlationId '%s' store path exists and is not a directory\n",
 				srcSrvName,
 				fileName,
 				correlationId,
