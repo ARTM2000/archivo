@@ -23,7 +23,7 @@ type registerNewSourceServer struct {
 type rotateSrcSrvFile struct {
 	File     *multipart.FileHeader `form:"file" validate:"required"`
 	FileName string                `form:"filename" validate:"omitempty,alphanum"`
-	Rotate   int64                 `form:"rotate" validate:"required,number"`
+	Rotate   int                   `form:"rotate" validate:"required,number"`
 }
 
 func (api *API) registerNewSourceServer(c *fiber.Ctx) error {
@@ -121,6 +121,9 @@ func (api *API) rotateSrcSrvFile(c *fiber.Ctx) error {
 	err := srcsrvManager.RotateFile(srcsrv, rotateData.Rotate, rotateData.FileName, rotateData.File)
 	if err != nil {
 		log.Default().Println("error in file rotation. error:", err.Error())
+		if errors.Is(err, xerrors.ErrFileRotateCountIsLowerThanPreviousOne) {
+			return fiber.NewError(fiber.StatusConflict, err.Error())
+		}
 		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
 	}
 

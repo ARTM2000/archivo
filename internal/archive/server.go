@@ -65,7 +65,7 @@ func runServer(c *Config) {
 	app.Use(helmet.New())
 
 	app.Use(func(c *fiber.Ctx) error {
-		c.Accepts(fiber.MIMEApplicationJSON,fiber.MIMEMultipartForm)
+		c.Accepts(fiber.MIMEApplicationJSON, fiber.MIMEMultipartForm)
 		return c.Next()
 	})
 

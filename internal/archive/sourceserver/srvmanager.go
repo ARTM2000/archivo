@@ -38,7 +38,8 @@ type SrvManager struct {
 
 type StoreManager interface {
 	FileStore(srcSrvName string, fileName string, file *multipart.FileHeader, correlationId string) error
-	FileRotate(srcSrvName string, fileName string, rotate uint64, correlationId string) error
+	FileRotate(srcSrvName string, fileName string, rotate int, correlationId string) error
+	FileStoreValidate(srcSrvName string, fileName string, rotate int) error
 }
 
 func (sm *SrvManager) generateAPIKey() (string, error) {
@@ -142,7 +143,7 @@ func (sm *SrvManager) getStoreManager() StoreManager {
 	}
 }
 
-func (sm *SrvManager) RotateFile(srcSrv *SourceServer, rotate int64, fileName string, file *multipart.FileHeader) error {
+func (sm *SrvManager) RotateFile(srcSrv *SourceServer, rotate int, fileName string, file *multipart.FileHeader) error {
 	storeManager := sm.getStoreManager()
 	// make sure of final filename
 	fnFilename := fileName
@@ -151,15 +152,42 @@ func (sm *SrvManager) RotateFile(srcSrv *SourceServer, rotate int64, fileName st
 	}
 
 	log.Default().Printf(
-		"storing file '%s' for source server '%s' with correlationId '%s'\n", 
-		fnFilename, 
-		srcSrv.Name, 
+		"storing file '%s' for source server '%s' with correlationId '%s'\n",
+		fnFilename,
+		srcSrv.Name,
 		sm.config.CorrelationId,
 	)
 
-	err := storeManager.FileStore(srcSrv.Name, fnFilename, file, sm.config.CorrelationId)
+	err := storeManager.FileStoreValidate(srcSrv.Name, fnFilename, rotate)
 	if err != nil {
-		log.Default().Printf("error in file store, source server name: '%s' correlationId: '%s', error: %s", srcSrv.Name, sm.config.CorrelationId, err.Error())
+		log.Default().Printf(
+			"error in file store, source server name: '%s' correlationId: '%s', error: %s",
+			srcSrv.Name,
+			sm.config.CorrelationId,
+			err.Error(),
+		)
+		return err
+	}
+
+	err = storeManager.FileStore(srcSrv.Name, fnFilename, file, sm.config.CorrelationId)
+	if err != nil {
+		log.Default().Printf(
+			"error in file store, source server name: '%s' correlationId: '%s', error: %s",
+			srcSrv.Name,
+			sm.config.CorrelationId,
+			err.Error(),
+		)
+		return err
+	}
+
+	err = storeManager.FileRotate(srcSrv.Name, fnFilename, rotate, sm.config.CorrelationId)
+	if err != nil {
+		log.Default().Printf(
+			"error in file rotate, source server name: '%s' correlationId: '%s', error: %s",
+			srcSrv.Name,
+			sm.config.CorrelationId,
+			err.Error(),
+		)
 		return err
 	}
 
