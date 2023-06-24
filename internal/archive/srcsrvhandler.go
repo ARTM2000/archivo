@@ -121,7 +121,8 @@ func (api *API) rotateSrcSrvFile(c *fiber.Ctx) error {
 	err := srcsrvManager.RotateFile(srcsrv, rotateData.Rotate, rotateData.FileName, rotateData.File)
 	if err != nil {
 		log.Default().Println("error in file rotation. error:", err.Error())
-		if errors.Is(err, xerrors.ErrFileRotateCountIsLowerThanPreviousOne) {
+		if errors.Is(err, xerrors.ErrFileRotateCountIsLowerThanPreviousOne) ||
+			errors.Is(err, xerrors.ErrRotateGlobalLimitReached) {
 			return fiber.NewError(fiber.StatusConflict, err.Error())
 		}
 		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")

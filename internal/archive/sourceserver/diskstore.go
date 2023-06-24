@@ -114,19 +114,12 @@ func (ds *DiskStore) FileStoreValidate(srcSrvName string, fileName string, rotat
 	}
 
 	metaFilePath := path.Join(storePath, ".archive1.meta")
-
-	var metaF *os.File
-	// to prevent more io operations
-	if metaF == nil {
-		var err error
-		metaF, err = os.Open(metaFilePath)
-		if err != nil {
-			log.Default().Println("error in opening meta file, error: ", err.Error())
-			return err
-		}
-		defer metaF.Close()
+	metaF, err := os.Open(metaFilePath)
+	if err != nil {
+		log.Default().Println("error in opening meta file, error: ", err.Error())
+		return err
 	}
-	// log.Default().Println("here2", metaF)
+	defer metaF.Close()
 
 	metaFileBytes, err := io.ReadAll(metaF)
 	if err != nil {
@@ -170,26 +163,19 @@ func (ds *DiskStore) FileRotate(srcSrvName string, fileName string, rotate int, 
 
 	// if rotate meta file not found, create it
 	metaFilePath := path.Join(storePath, ".archive1.meta")
-	var metaF *os.File
-	if _, err := os.Stat(path.Join(storePath, ".archive1.meta")); err != nil {
-		if !os.IsNotExist(err) {
-			log.Default().Println("error in meta file existence check. error: ", err.Error())
-			return err
-		}
-		metaF, err = os.Create(metaFilePath)
-		if err != nil {
-			log.Default().Println("error in writing meta file. error: ", err.Error())
-			return err
-		}
-		defer metaF.Close()
+	metaF, err := os.Create(metaFilePath)
+	if err != nil {
+		log.Default().Println("error in writing meta file. error: ", err.Error())
+		return err
+	}
+	defer metaF.Close()
 
-		mData := metaData{Rotate: rotate}
-		jsonMetaData, _ := json.Marshal(mData)
-		_, err := metaF.Write(jsonMetaData)
-		if err != nil {
-			log.Default().Println("error in write default meta data to file, error: ", err.Error())
-			return err
-		}
+	mData := metaData{Rotate: rotate}
+	jsonMetaData, _ := json.Marshal(mData)
+	_, err = metaF.Write(jsonMetaData)
+	if err != nil {
+		log.Default().Println("error in write default meta data to file, error: ", err.Error())
+		return err
 	}
 
 	// sort files by date

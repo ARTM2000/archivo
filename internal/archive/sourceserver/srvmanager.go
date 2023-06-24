@@ -13,6 +13,8 @@ import (
 	"github.com/ARTM2000/archive1/internal/archive/xerrors"
 )
 
+const GlobalFileRotateLimit = 100
+
 func NewSrvManager(config SrvConfig, srvRepo SrvRepository) SrvManager {
 	return SrvManager{
 		config:        config,
@@ -157,6 +159,16 @@ func (sm *SrvManager) RotateFile(srcSrv *SourceServer, rotate int, fileName stri
 		srcSrv.Name,
 		sm.config.CorrelationId,
 	)
+
+	if rotate > GlobalFileRotateLimit {
+		log.Default().Printf(
+			"error in file store, source server name: '%s' correlationId: '%s', error: %s",
+			srcSrv.Name,
+			sm.config.CorrelationId,
+			xerrors.ErrRotateGlobalLimitReached.Error(),
+		)
+		return xerrors.ErrRotateGlobalLimitReached
+	}
 
 	err := storeManager.FileStoreValidate(srcSrv.Name, fnFilename, rotate)
 	if err != nil {

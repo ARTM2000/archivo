@@ -15,4 +15,5 @@ var (
 	ErrUnableToCreateStoreDirectory          = errors.New("unable to create store directory")
 	ErrStorePathExistButNotADirectory        = errors.New("store path exists but is not a directory")
 	ErrFileRotateCountIsLowerThanPreviousOne = errors.New("file rotate count is lower than previous one")
+	ErrRotateGlobalLimitReached              = errors.New("file rotate is more than global file rotate count")
 )
