@@ -39,12 +39,12 @@ func sendFileToArchive1Server(server string, name string, key string, file *File
 	client := &http.Client{}
 	correlationId := uuid.New().String()
 
-	log.Default().Printf("correlation-id:'%s', target-file: '%s'\n", correlationId, file.Path)
+	log.Default().Printf("request-id:'%s', target-file: '%s'\n", correlationId, file.Path)
 
 	// read file
 	f, err := os.Open(file.Path)
 	if err != nil {
-		return fmt.Errorf("correlation-id:'%s', error: %s", correlationId, err.Error())
+		return fmt.Errorf("request-id:'%s', error: %s", correlationId, err.Error())
 	}
 	defer f.Close()
 
@@ -56,7 +56,7 @@ func sendFileToArchive1Server(server string, name string, key string, file *File
 	writer.WriteField("rotate", strconv.FormatInt(file.Rotate, 10))
 	part, err := writer.CreateFormFile("file", filepath.Base(f.Name()))
 	if err != nil {
-		return fmt.Errorf("correlation-id:'%s', error: %s", correlationId, err.Error())
+		return fmt.Errorf("request-id:'%s', error: %s", correlationId, err.Error())
 	}
 	io.Copy(part, f)
 	writer.Close()
@@ -65,26 +65,26 @@ func sendFileToArchive1Server(server string, name string, key string, file *File
 
 	req, err := http.NewRequest(http.MethodPost, requestUrl, body)
 	if err != nil {
-		return fmt.Errorf("correlation-id:'%s', error: %s", correlationId, err.Error())
+		return fmt.Errorf("request-id:'%s', error: %s", correlationId, err.Error())
 	}
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.Header.Set("Authorization", key)
 	req.Header.Set("X-Agent1-Name", name)
-	req.Header.Set("X-Correlation-Id", correlationId)
+	req.Header.Set("X-Request-ID", correlationId)
 
 	res, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("correlation-id:'%s', error: %s", correlationId, err.Error())
+		return fmt.Errorf("request-id:'%s', error: %s", correlationId, err.Error())
 	}
 
 	resBody, err := io.ReadAll(res.Body)
 	if err != nil {
-		return fmt.Errorf("correlation-id:'%s', error: %s", correlationId, err.Error())
+		return fmt.Errorf("request-id:'%s', error: %s", correlationId, err.Error())
 	}
 
 	if res.StatusCode != 200 {
-		return fmt.Errorf("correlation-id:'%s', error: %s",
+		return fmt.Errorf("request-id:'%s', error: %s",
 			correlationId,
 			fmt.Sprintf(
 				"non 200 status code received. response: %s",
@@ -92,7 +92,7 @@ func sendFileToArchive1Server(server string, name string, key string, file *File
 			),
 		)
 	}
-	log.Default().Printf("correlation-id:'%s', response: %s\n", correlationId, resBody)
+	log.Default().Printf("request-id:'%s', response: %s\n", correlationId, resBody)
 
 	return nil
 }

@@ -61,7 +61,16 @@ func runServer(c *Config) {
 	app.Use(logger.New(logger.Config{
 		Format: "[${pid}] '${ip}:${port}' ${status} - ${method} ${path}\n",
 	}))
-	app.Use(requestid.New())
+	app.Use(requestid.New(requestid.Config{
+		Next: func(c *fiber.Ctx) bool {
+			trackId := c.Get(fiber.HeaderXRequestID)
+			if trackId != "" {
+				c.Set(fiber.HeaderXRequestID, trackId)
+				return true
+			}
+			return false
+		},
+	}))
 	app.Use(helmet.New())
 
 	app.Use(func(c *fiber.Ctx) error {
