@@ -47,4 +47,5 @@ const (
 	MessagePassword              = "%s is not a strong password"
 	MessageDirPath               = "%s is not valid directory path"
 	MessageDir                   = "%s is not a existing directory"
+	MessageFilename              = "%s is not valid filename"
 )

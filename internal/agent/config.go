@@ -14,6 +14,7 @@ type File struct {
 	Path     string `mapstructure:"path" json:"path" validate:"required,filepath"`
 	Interval string `mapstructure:"interval" json:"interval" validate:"required"`
 	Rotate   int64  `mapstructure:"rotate" json:"rotate" validate:"omitempty,required,number"`
+	Filename string `mapstructure:"filename" json:"filename" validate:"omitempty,required,filename"`
 }
 
 func (f *File) String() string {
@@ -68,10 +69,19 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("configuration validation error: %s", errors[0].Message)
 	}
 
+	filenames := []string{}
 	for _, file := range c.Files {
 		if err := file.Validate(); err != nil {
 			return err
 		}
+		if file.Filename != "" {
+			filenames = append(filenames, file.Filename)
+		}
+	}
+
+	isUnique, dup := validate.ValidateSliceParamUniqueness[string](filenames)
+	if !isUnique {
+		return fmt.Errorf("filename uniqueness violation. '%s' is a duplicate filename", *dup)
 	}
 
 	return nil

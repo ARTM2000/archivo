@@ -50,6 +50,9 @@ func sendFileToArchive1Server(server string, name string, key string, file *File
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
+	if file.Filename != "" {
+		writer.WriteField("filename", file.Filename)
+	}
 	writer.WriteField("rotate", strconv.FormatInt(file.Rotate, 10))
 	part, err := writer.CreateFormFile("file", filepath.Base(f.Name()))
 	if err != nil {
@@ -58,7 +61,7 @@ func sendFileToArchive1Server(server string, name string, key string, file *File
 	io.Copy(part, f)
 	writer.Close()
 
-	requestUrl := fmt.Sprintf("%s%s", server, "/api/v1/store/file")
+	requestUrl := fmt.Sprintf("%s%s", server, "/api/v1/servers/store/file")
 
 	req, err := http.NewRequest(http.MethodPost, requestUrl, body)
 	if err != nil {

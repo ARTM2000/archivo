@@ -11,6 +11,7 @@ var validate = validator.New()
 
 func init() {
 	validate.RegisterValidation("password", validatePassword)
+	validate.RegisterValidation("filename", validateFilename)
 }
 
 type validationError struct {

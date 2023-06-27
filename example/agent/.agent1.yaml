@@ -13,7 +13,8 @@ agent_key: "thisismysampleapikeyfromarchive1"
 
 # Files that agent1 should send to archive1 server to backup temporarily
 files:
-  - path: "/absolute/path/to/file1"
+  - filename: "file1-custom-name"
+    path: "/absolute/path/to/file1"
     interval: "1 * * * *" # use crontab style to specify interval
     rotate: 3 # backup counts on archive1 server. minimum is 1
 
