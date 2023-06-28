@@ -50,7 +50,7 @@ After you got the binary file, you need to have prepare your configuration file.
 
 After your configuration is ready, you should run `agent1` by running:
 ```bash
-# if you set your config file at ${HOME}/.archive1.yaml
+# if you set your config file at ${HOME}/.agent1.yaml
 ./agent1 
 
 # if you set your config file elsewhere, pass the path of config file
@@ -59,7 +59,7 @@ After your configuration is ready, you should run `agent1` by running:
 
 You can validate your configuration with following command:
 ```bash
-# if you set your config file at ${HOME}/.archive1.yaml
+# if you set your config file at ${HOME}/.agent1.yaml
 ./agent1 validate
 
 # if you set your config file elsewhere, pass the path of config file
