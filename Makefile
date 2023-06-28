@@ -20,3 +20,9 @@ format:
 
 deploy_compose_dbonly:
 	@docker-compose -f ./deployments/docker-compose.dbonly.yaml up
+
+release_archive1:
+	@bash ./scripts/build_cli.bash archive1 ${PWD}/cmd/server/main.go
+
+release_agent1:
+	@bash ./scripts/build_cli.bash agent ${PWD}/cmd/agent/main.go
