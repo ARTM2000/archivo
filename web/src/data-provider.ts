@@ -7,6 +7,6 @@ const httpClient = (url: string, options: Options | undefined) => {
 };
 
 export const DataProvider = jsonServerProvider(
-	import.meta.env.VITE_ARCHIVE1_PANEL_BASE_URL,
+	import.meta.env.VITE_ARCHIVE1_API_PANEL_BASE_URL,
 	httpClient
 );

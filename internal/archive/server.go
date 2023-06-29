@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -72,6 +73,10 @@ func runServer(c *Config) {
 		},
 	}))
 	app.Use(helmet.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Request-ID",
+	}))
 
 	app.Use(func(c *fiber.Ctx) error {
 		c.Accepts(fiber.MIMEApplicationJSON, fiber.MIMEMultipartForm)
