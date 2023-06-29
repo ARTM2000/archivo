@@ -1,8 +1,5 @@
 tmp
 build
-example/_
-_
+**/_
 
-*.env
-!*.env.*
 .DS_Store
