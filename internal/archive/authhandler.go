@@ -32,6 +32,20 @@ type loginUserDto struct {
 	Password string `json:"password" validate:"required"`
 }
 
+func (api *API) checkAdminExistence(c *fiber.Ctx) error {
+	userManger := auth.NewUserManager(auth.UserConfig{}, auth.NewUserRepository(api.DB))
+	adminExist, err := userManger.AdminExistenceCheck()
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+		Data: map[string]interface{}{
+			"admin_exist": adminExist,
+		},
+	}))
+}
+
 func (api *API) registerAdmin(c *fiber.Ctx) error {
 	registerData := registerAdminDto{}
 	if err := c.BodyParser(&registerData); err != nil {

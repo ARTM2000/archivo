@@ -29,6 +29,22 @@ type userManger struct {
 	config         UserConfig
 }
 
+func (um *userManger) AdminExistenceCheck() (bool, error) {
+	adminUser, err := um.userRepository.FindAdminUser()
+	if err != nil {
+		log.Default().Printf("error in finding admin user, error: %s", err.Error())
+		return false, err
+	}
+
+	if adminUser != nil {
+		log.Default().Println("admin user exist")
+		return true, nil
+	}
+
+	log.Default().Println("admin user not exist")
+	return false, nil
+}
+
 func (um *userManger) RegisterAdmin(email string, username string, password string) (*User, error) {
 	adminUser, err := um.userRepository.FindAdminUser()
 	if adminUser != nil {
