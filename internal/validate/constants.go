@@ -44,7 +44,7 @@ const (
 	MessageBoolean               = "%s must ba a valid Boolean"
 	MessageGroupInvalid          = "%s is invalid. must be %s"
 	MessageCron                  = "%s must be valid cron schedule"
-	MessagePassword              = "%s is not a strong password"
+	MessagePassword              = "%s is not strong enough"
 	MessageDirPath               = "%s is not valid directory path"
 	MessageDir                   = "%s is not a existing directory"
 	MessageFilename              = "%s is not valid filename"
