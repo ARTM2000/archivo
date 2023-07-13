@@ -4,18 +4,19 @@ import { DataProvider } from './data-provider';
 import { AuthProvider } from './auth-provider';
 import { LoginWrapper } from './components/auth/login-wrapper';
 import { Dashboard } from './components/home/dashboard';
+import { SourceServerList } from './components/sourceservers/list';
 
 function App() {
   return (
     <>
       <Admin
-        dataProvider={DataProvider}
+        dataProvider={DataProvider as any}
         authProvider={AuthProvider}
         dashboard={Dashboard}
         loginPage={LoginWrapper}
         requireAuth
       >
-        <Resource name="srcsrv"></Resource>
+        <Resource name="servers" list={SourceServerList}></Resource>
       </Admin>
     </>
   );

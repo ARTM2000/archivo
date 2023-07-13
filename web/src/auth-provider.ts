@@ -2,7 +2,7 @@ import { AuthProvider as IAuthProvider } from 'ra-core';
 import { HttpAgent } from './utils/http-agent';
 import { ArchiveResponse } from './utils/types';
 
-const TOKEN_KEY = 'tkn';
+export const TOKEN_KEY = 'tkn';
 
 export const AuthProvider: IAuthProvider = {
   login: async (params: { email: string; password: string }) => {
