@@ -3,6 +3,7 @@ import './App.css';
 import { DataProvider } from './data-provider';
 import { AuthProvider } from './auth-provider';
 import { LoginWrapper } from './components/auth/login-wrapper';
+import { Dashboard } from './components/home/dashboard';
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       <Admin
         dataProvider={DataProvider}
         authProvider={AuthProvider}
+        dashboard={Dashboard}
         loginPage={LoginWrapper}
         requireAuth
       >
