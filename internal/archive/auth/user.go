@@ -31,7 +31,7 @@ type userManger struct {
 
 func (um *userManger) AdminExistenceCheck() (bool, error) {
 	adminUser, err := um.userRepository.FindAdminUser()
-	if err != nil {
+	if err != nil && !errors.Is(err, xerrors.ErrRecordNotFound) {
 		log.Default().Printf("error in finding admin user, error: %s", err.Error())
 		return false, err
 	}

@@ -66,6 +66,11 @@ func (api *API) registerAdmin(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusConflict, "admin already exists")
 		}
 
+		if errors.Is(err, xerrors.ErrEmailOrUsernameInUse) {
+			log.Default().Println("admin with this email for username exist")
+			return fiber.NewError(fiber.StatusConflict, "admin with this email for username exists")
+		}
+
 		log.Default().Println("unhandled error from userManager")
 		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
 	}
