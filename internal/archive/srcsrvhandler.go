@@ -26,6 +26,59 @@ type rotateSrcSrvFile struct {
 	Rotate   int                   `form:"rotate" validate:"required,number"`
 }
 
+type listData struct {
+	SortBy string `query:"sort_by" validate:"alphanum"`
+	SortOrder string `query:"sort_order" validate:"required"`
+	Start *int `query:"start" validate:"omitempty,number"`
+	End *int `query:"end" validate:"omitempty,number"`
+}
+
+func (api *API) getListOfSourceServers(c *fiber.Ctx) error {
+	var data listData
+	if err := c.QueryParser(&data); err != nil {
+		log.Default().Println(err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	if errs, ok := validate.ValidateStruct[listData](&data); !ok {
+		log.Default().Println(errs[0].Message)
+		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
+	}
+
+	srcsrvManager := sourceserver.NewSrvManager(
+		sourceserver.SrvConfig{},
+		sourceserver.NewSrvRepository(api.DB),
+	)
+
+	if data.Start == nil {
+		var initialStart = 0
+		data.Start = &initialStart
+	}
+	if data.End == nil {
+		var initialEnd = 10
+		data.End = &initialEnd
+	}
+
+	servers, total, err := srcsrvManager.GetListOfAllSourceServers(sourceserver.FindAllOption{
+		SortBy: data.SortBy,
+		SortOrder: data.SortOrder,
+		Start: *data.Start,
+		End: *data.End,
+	})
+
+	if err != nil {
+		log.Default().Println("[Unhandled] error for finding all source servers", err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+		Data: map[string]interface{}{
+			"list": servers,
+			"total": total,
+		},
+	}))
+}
+
 func (api *API) registerNewSourceServer(c *fiber.Ctx) error {
 	var registerData registerNewSourceServer
 	if err := c.BodyParser(&registerData); err != nil {

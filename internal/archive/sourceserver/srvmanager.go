@@ -73,6 +73,17 @@ func (sm *SrvManager) generateAPIKey() (string, error) {
 	return apiKey, nil
 }
 
+func (sm *SrvManager) GetListOfAllSourceServers(option FindAllOption) (*[]SourceServer, int64, error) {
+	servers, total, err := sm.srvRepository.FindAllServers(option)
+
+	if err != nil {
+		log.Default().Println("[Unhandled] error in finding all source servers", err.Error())
+		return nil, 0, xerrors.ErrUnhandled
+	}
+
+	return servers, total, nil
+}
+
 func (sm *SrvManager) RegisterNewSourceServer(name string) (*newSrvSrcResult, error) {
 	existingSrv, err := sm.srvRepository.FindSrvWithName(name)
 	if err != nil && !errors.Is(err, xerrors.ErrRecordNotFound) {

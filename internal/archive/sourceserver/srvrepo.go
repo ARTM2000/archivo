@@ -6,6 +6,7 @@ import (
 
 	"github.com/ARTM2000/archive1/internal/archive/xerrors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type SourceServer struct {
@@ -59,4 +60,29 @@ func (sr *SrvRepository) CreateNewSrv(name string, hashedAPIKey string) (*Source
 	}
 
 	return &newSrv, nil
+}
+
+type FindAllOption struct {
+	SortBy    string
+	SortOrder string
+	Start     int
+	End       int
+}
+
+func (sr *SrvRepository) FindAllServers(option FindAllOption) (*[]SourceServer, int64, error) {
+	var srvs []SourceServer
+	var DESC bool
+	if option.SortOrder == "ASC" {
+		DESC = false
+	} else {
+		DESC = true
+	}
+	dbResult := sr.db.Model(&SourceServer{}).Order(clause.OrderByColumn{Column: clause.Column{Name: option.SortBy}, Desc: DESC}).Offset(option.Start).Limit(option.End).Find(&srvs)
+
+	if dbResult.Error != nil {
+		log.Default().Printf("[Unhandled] error in finding source servers, error: %s\n", dbResult.Error.Error())
+		return nil, 0, xerrors.ErrUnhandled
+	}
+
+	return &srvs, dbResult.RowsAffected, nil
 }

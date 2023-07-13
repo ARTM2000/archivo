@@ -110,6 +110,7 @@ func runServer(c *Config) {
 			})
 			rtr.Use(api.authorizationMiddleware)
 			rtr.Post("/new", api.registerNewSourceServer)
+			rtr.Get("/list", api.getListOfSourceServers)
 		})
 	}, "APIv1")
 
