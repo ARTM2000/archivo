@@ -14,21 +14,20 @@ export const DataProvider: Partial<IDataProvider> = {
   ): Promise<GetListResult<any>> => {
     const { page, perPage } = params.pagination;
     const { field, order } = params.sort;
-    const response = await HttpAgent.get<ArchiveResponse<{ list: any[], total: number }>>(
-      `/${resource}/list`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}`,
-        },
-        params: {
-          sort_by: field,
-          sort_order: order,
-          start: (page - 1) * perPage,
-          end: (page * perPage - 1),
-          filter: JSON.stringify(params.filter),
-        },
+    const response = await HttpAgent.get<
+      ArchiveResponse<{ list: any[]; total: number }>
+    >(`/${resource}/list`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}`,
       },
-    );
+      params: {
+        sort_by: field,
+        sort_order: order,
+        start: (page - 1) * perPage,
+        end: page * perPage - 1,
+        filter: JSON.stringify(params.filter),
+      },
+    });
 
     const data = response.data.data;
     return {

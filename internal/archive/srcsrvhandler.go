@@ -27,10 +27,10 @@ type rotateSrcSrvFile struct {
 }
 
 type listData struct {
-	SortBy string `query:"sort_by" validate:"alphanum"`
+	SortBy    string `query:"sort_by" validate:"alphanum"`
 	SortOrder string `query:"sort_order" validate:"required"`
-	Start *int `query:"start" validate:"omitempty,number"`
-	End *int `query:"end" validate:"omitempty,number"`
+	Start     *int   `query:"start" validate:"omitempty,number"`
+	End       *int   `query:"end" validate:"omitempty,number"`
 }
 
 func (api *API) getListOfSourceServers(c *fiber.Ctx) error {
@@ -60,10 +60,10 @@ func (api *API) getListOfSourceServers(c *fiber.Ctx) error {
 	}
 
 	servers, total, err := srcsrvManager.GetListOfAllSourceServers(sourceserver.FindAllOption{
-		SortBy: data.SortBy,
+		SortBy:    data.SortBy,
 		SortOrder: data.SortOrder,
-		Start: *data.Start,
-		End: *data.End,
+		Start:     *data.Start,
+		End:       *data.End,
 	})
 
 	if err != nil {
@@ -73,7 +73,7 @@ func (api *API) getListOfSourceServers(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
 		Data: map[string]interface{}{
-			"list": servers,
+			"list":  servers,
 			"total": total,
 		},
 	}))
