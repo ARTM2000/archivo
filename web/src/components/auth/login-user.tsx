@@ -1,48 +1,40 @@
-import React, { useState } from 'react';
 import {
-  Typography,
-  CircularProgress,
   Box,
+  CircularProgress,
   Grid,
-  Button,
   TextField,
+  Typography,
+  Button,
 } from '@mui/material';
 import { Logo } from '../branding/logo';
-import { HttpAgent } from '../../utils/http-agent';
-import { useNotify } from 'react-admin';
+import React, { useState } from 'react';
+import { useLogin, useNotify } from 'react-admin';
 import { AxiosError } from 'axios';
 import { ArchiveResponse } from '../../utils/types';
 
-export const RegisterAdmin = () => {
-  const [username, setUsername] = useState<string>('');
+export const LoginUser = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const notify = useNotify();
+  const login = useLogin();
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    HttpAgent.post('/auth/admin/register', {
-      email,
-      password,
-      username,
-    })
+    login({ email, password })
       .then(() => {
-        notify('Admin registered', { type: 'success' });
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        notify('Welcome!', { type: 'success', autoHideDuration: 3000 });
       })
-      .catch((err: AxiosError<ArchiveResponse<any>>) => {
-        setLoading(false);
+      .catch((err: AxiosError<ArchiveResponse>) => {
         if (err.response?.status !== 500) {
           notify(err.response?.data.message, { type: 'error' });
           return;
         }
         notify('Something went wrong :(', { type: 'error' });
-        console.log(err);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
@@ -57,7 +49,7 @@ export const RegisterAdmin = () => {
         align="center"
         gutterBottom
       >
-        Register New Admin
+        Login
       </Typography>
       <Box height={'100px'} margin={'10px auto'} maxWidth={'500px'}>
         <form
@@ -74,14 +66,6 @@ export const RegisterAdmin = () => {
                 label="Email"
                 value={email}
                 onChange={(e: any) => setEmail(e.target.value)}
-                fullWidth
-              />
-            </Grid>
-            <Grid item>
-              <TextField
-                label="Username"
-                value={username}
-                onChange={(e: any) => setUsername(e.target.value)}
                 fullWidth
               />
             </Grid>
@@ -104,7 +88,7 @@ export const RegisterAdmin = () => {
                 {loading ? (
                   <CircularProgress size={24} color="info" />
                 ) : (
-                  'Register Admin'
+                  'Login'
                 )}
               </Button>
             </Grid>

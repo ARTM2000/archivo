@@ -4,6 +4,7 @@ import { RegisterAdmin } from './register-admin';
 import { Typography } from '@mui/material';
 import { HttpAgent } from '../../utils/http-agent';
 import { useNotify } from 'react-admin';
+import { LoginUser } from './login-user';
 
 export const LoginWrapper = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -39,7 +40,7 @@ export const LoginWrapper = () => {
   ) : (
     <>
       {!adminExist && <RegisterAdmin />}
-      {adminExist && <h1>login user</h1>}
+      {adminExist && <LoginUser />}
     </>
   );
 };
