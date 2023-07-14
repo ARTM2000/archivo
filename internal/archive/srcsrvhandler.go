@@ -108,10 +108,9 @@ func (api *API) registerNewSourceServer(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
 		Message: "new source server created",
 		Data: map[string]interface{}{
-			"server": map[string]interface{}{
-				"name":    newSourceServerD.NewServer.Name,
-				"api_key": newSourceServerD.APIKey,
-			},
+			"id": newSourceServerD.NewServer.ID,
+			"name":    newSourceServerD.NewServer.Name,
+			"api_key": newSourceServerD.APIKey,
 		},
 	}))
 }

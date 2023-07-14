@@ -1,4 +1,5 @@
 import {
+  CreateParams,
   GetListParams,
   GetListResult,
   DataProvider as IDataProvider,
@@ -33,6 +34,24 @@ export const DataProvider: Partial<IDataProvider> = {
     return {
       data: data.list,
       total: data.total,
+    };
+  },
+
+  create: async (resource: string, params: CreateParams<any>) => {
+    const response = await HttpAgent.post<
+      ArchiveResponse<{ id: number; [key: string]: any }>
+    >(`/${resource}/new`, params.data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}`,
+      },
+    });
+
+    const data = response.data.data
+    return {
+      data: {
+        ...params.data,
+        id: data.id,
+      },
     };
   },
 };

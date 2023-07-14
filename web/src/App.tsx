@@ -5,6 +5,8 @@ import { AuthProvider } from './auth-provider';
 import { LoginWrapper } from './components/auth/login-wrapper';
 import { Dashboard } from './components/home/dashboard';
 import { SourceServerList } from './components/sourceservers/list';
+import StorageSharpIcon from '@mui/icons-material/StorageSharp';
+import { SourceServerCreate } from './components/sourceservers/create';
 
 function App() {
   return (
@@ -16,7 +18,13 @@ function App() {
         loginPage={LoginWrapper}
         requireAuth
       >
-        <Resource name="servers" list={SourceServerList}></Resource>
+        <Resource
+          name="servers"
+          list={SourceServerList}
+          create={SourceServerCreate}
+          hasEdit={false}
+          icon={StorageSharpIcon}
+        ></Resource>
       </Admin>
     </>
   );
