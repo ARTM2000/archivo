@@ -232,3 +232,46 @@ func (ds *DiskStore) FileRotate(srcSrvName string, fileName string, rotate int, 
 
 	return nil
 }
+
+func (ds *DiskStore) FilesList(srcSrvName string) ([]FileList, error) {
+
+	// check that is there any directory for requested source server or not
+	srcSrvStorePath := path.Join(ds.Config.Path, srcSrvName)
+	ents, err := os.ReadDir(srcSrvStorePath)
+
+	if err != nil {
+		log.Default().Println("error in reading source server store directory, error:", err.Error())
+		if os.IsNotExist(err) {
+			return nil, xerrors.ErrNoStoreForSourceServer
+		}
+		return nil, xerrors.ErrUnhandled
+	}
+
+	var filenamesList []string
+	for _, ent := range ents {
+		if !ent.IsDir() {
+			filenamesList = append(filenamesList, ent.Name())
+		}
+	}
+
+	// sort files by their
+	sort.Strings(filenamesList)
+	var filesList []FileList
+	for i, filename := range filenamesList {
+		dirName := path.Join(srcSrvStorePath, filename)
+		fInfo, _ := os.Stat(dirName)
+		snapshots, _ := os.ReadDir(dirName)
+
+		// (-1) is to exclude `.archive1.meta` metadata file
+		fileNameSnapshotCounts := len(snapshots) - 1
+
+		filesList = append(filesList, FileList{
+			ID:        uint32(i + 1),
+			FileName:  filename,
+			Snapshots: fileNameSnapshotCounts,
+			UpdatedAt: fInfo.ModTime(),
+		})
+	}
+
+	return filesList, nil
+}
