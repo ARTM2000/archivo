@@ -42,6 +42,23 @@ func (sr *SrvRepository) FindSrvWithName(name string) (*SourceServer, error) {
 	return &srv, nil
 }
 
+func (sr *SrvRepository) FindSrvWithId(id uint) (*SourceServer, error) {
+	var srv SourceServer
+	dbResult := sr.db.Model(&SourceServer{}).Where(SourceServer{ID: id}).First(&srv)
+
+	if dbResult.Error != nil {
+		if errors.Is(dbResult.Error, gorm.ErrRecordNotFound) {
+			log.Default().Printf("sourceServer with ID: '%d' not found\n", id)
+			return nil, xerrors.ErrRecordNotFound
+		}
+
+		log.Default().Printf("[Unhandled] error in finding source server with id: '%d', error: %s\n", id, dbResult.Error.Error())
+		return nil, xerrors.ErrUnhandled
+	}
+
+	return &srv, nil
+}
+
 func (sr *SrvRepository) CreateNewSrv(name string, hashedAPIKey string) (*SourceServer, error) {
 	var newSrv = SourceServer{
 		Name:         name,
