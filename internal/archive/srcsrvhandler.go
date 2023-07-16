@@ -79,6 +79,70 @@ func (api *API) getListOfSourceServers(c *fiber.Ctx) error {
 	}))
 }
 
+func (api *API) getSourceServerFilesList(c *fiber.Ctx) error {
+	params := struct {
+		SrvId uint `params:"srvId" validate:"required,number"`
+	}{}
+	if err := c.ParamsParser(&params); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+	if errs, ok := validate.ValidateStruct[struct {
+		SrvId uint `params:"srvId" validate:"required,number"`
+	}](&params); !ok {
+		log.Default().Println(errs[0].Message)
+		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
+	}
+
+	var ldata listData
+	if err := c.QueryParser(&ldata); err != nil {
+		log.Default().Println(err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+	if errs, ok := validate.ValidateStruct[listData](&ldata); !ok {
+		log.Default().Println(errs[0].Message)
+		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
+	}
+
+	srcsrvManager := sourceserver.NewSrvManager(
+		sourceserver.SrvConfig{
+			CorrelationId:   c.GetRespHeader(fiber.HeaderXRequestID),
+			StoreMode:       api.Config.FileStore.Mode,
+			DiskStoreConfig: sourceserver.DiskStoreConfig(api.Config.FileStore.DiskConfig),
+		},
+		sourceserver.NewSrvRepository(api.DB),
+	)
+
+	filesList, total, err := srcsrvManager.GetListOfSourceServerFiles(
+		params.SrvId,
+		sourceserver.FindAllOption{
+			SortBy:    ldata.SortBy,
+			SortOrder: ldata.SortOrder,
+			Start:     *ldata.Start,
+			End:       *ldata.End,
+		},
+	)
+	if err != nil {
+		log.Default().Printf("error in getting files list of source server by id '%d'. error: %s", params.SrvId, err.Error())
+		if errors.Is(err, xerrors.ErrNoStoreForSourceServer) {
+			return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+				Data: map[string]interface{}{
+					"list":  filesList,
+					"total": total,
+				},
+			}))
+		}
+
+		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+		Data: map[string]interface{}{
+			"list":  filesList,
+			"total": total,
+		},
+	}))
+}
+
 func (api *API) registerNewSourceServer(c *fiber.Ctx) error {
 	var registerData registerNewSourceServer
 	if err := c.BodyParser(&registerData); err != nil {
@@ -108,7 +172,7 @@ func (api *API) registerNewSourceServer(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
 		Message: "new source server created",
 		Data: map[string]interface{}{
-			"id": newSourceServerD.NewServer.ID,
+			"id":      newSourceServerD.NewServer.ID,
 			"name":    newSourceServerD.NewServer.Name,
 			"api_key": newSourceServerD.APIKey,
 		},

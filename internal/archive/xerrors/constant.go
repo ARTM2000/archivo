@@ -16,4 +16,5 @@ var (
 	ErrStorePathExistButNotADirectory        = errors.New("store path exists but is not a directory")
 	ErrFileRotateCountIsLowerThanPreviousOne = errors.New("file rotate count is lower than previous one")
 	ErrRotateGlobalLimitReached              = errors.New("file rotate is more than global file rotate count")
+	ErrNoStoreForSourceServer                = errors.New("no store exists for source server")
 )
