@@ -8,7 +8,9 @@ import (
 	"errors"
 	"log"
 	"mime/multipart"
+	"sort"
 	"strings"
+	"time"
 
 	"github.com/ARTM2000/archive1/internal/archive/xerrors"
 )
@@ -38,10 +40,18 @@ type SrvManager struct {
 	srvRepository SrvRepository
 }
 
+type FileList struct {
+	ID        uint32 `json:"id"`
+	FileName  string `json:"filename"`
+	Snapshots int
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type StoreManager interface {
 	FileStore(srcSrvName string, fileName string, file *multipart.FileHeader, correlationId string) error
 	FileRotate(srcSrvName string, fileName string, rotate int, correlationId string) error
 	FileStoreValidate(srcSrvName string, fileName string, rotate int) error
+	FilesList(srcSrvName string) ([]FileList, error)
 }
 
 func (sm *SrvManager) generateAPIKey() (string, error) {
@@ -215,4 +225,68 @@ func (sm *SrvManager) RotateFile(srcSrv *SourceServer, rotate int, fileName stri
 	}
 
 	return nil
+}
+
+func (sm *SrvManager) GetListOfSourceServerFiles(srcSrvId uint, options FindAllOption) (*[]FileList, uint32, error) {
+	srv, err := sm.srvRepository.FindSrvWithId(srcSrvId)
+
+	if err != nil {
+		if errors.Is(err, xerrors.ErrRecordNotFound) {
+			log.Default().Printf("source server with ID '%d' not exists\n", srcSrvId)
+			return nil, 0, xerrors.ErrRecordNotFound
+		}
+
+		log.Default().Printf("[Unhandled] finding source server with ID '%d' failed, error: %s", srcSrvId, err.Error())
+		return nil, 0, xerrors.ErrUnhandled
+	}
+
+	storeManager := sm.getStoreManager()
+	filesList, err := storeManager.FilesList(srv.Name)
+	if err != nil {
+		if errors.Is(err, xerrors.ErrNoStoreForSourceServer) {
+			return nil, 0, err
+		}
+
+		log.Default().Printf("[Unhandled] error in finding files for source server by name '%s', error: %s", srv.Name, err)
+		return nil, 0, xerrors.ErrUnhandled
+	}
+
+	switch options.SortBy {
+	case "id":
+		sort.Slice(filesList, func(i, j int) bool {
+			if options.SortOrder == "ASC" {
+				return filesList[i].ID > filesList[j].ID
+			}
+			return filesList[i].ID < filesList[j].ID
+		})
+	case "filename":
+		sort.Slice(filesList, func(i, j int) bool {
+			if options.SortOrder == "ASC" {
+				return filesList[i].FileName > filesList[j].FileName
+			}
+			return filesList[i].FileName < filesList[j].FileName
+		})
+	case "snapshots":
+		sort.Slice(filesList, func(i, j int) bool {
+			if options.SortOrder == "ASC" {
+				return filesList[i].Snapshots > filesList[j].Snapshots
+			}
+			return filesList[i].Snapshots < filesList[j].Snapshots
+		})
+	case "updated_at":
+		sort.Slice(filesList, func(i, j int) bool {
+			if options.SortOrder == "ASC" {
+				return filesList[i].UpdatedAt.After(filesList[j].UpdatedAt)
+			}
+			return filesList[j].UpdatedAt.After(filesList[i].UpdatedAt)
+		})
+	default:
+		log.Default().Printf("sortBy not defined, sortBy: '%s'", options.SortBy)
+	}
+
+	start := options.Start
+	end := options.End
+	finalList := filesList[start:end]
+
+	return &finalList, uint32(len(filesList)), nil
 }
