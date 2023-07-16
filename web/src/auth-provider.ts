@@ -6,7 +6,6 @@ export const TOKEN_KEY = 'tkn';
 
 export const AuthProvider: IAuthProvider = {
   login: async (params: { email: string; password: string }) => {
-    console.log(params);
     try {
       const res = await HttpAgent.post<
         ArchiveResponse<{ access_token: string }>
@@ -15,7 +14,6 @@ export const AuthProvider: IAuthProvider = {
         password: params.password,
       });
       const token = res.data.data.access_token;
-      console.log('token', token);
       localStorage.setItem(TOKEN_KEY, token);
     } catch (err) {
       console.log('login error', err);
@@ -25,7 +23,7 @@ export const AuthProvider: IAuthProvider = {
   checkAuth: async (_) => {
     const token = localStorage.getItem(TOKEN_KEY) || '';
     try {
-      const res = await HttpAgent.get<
+      await HttpAgent.get<
         ArchiveResponse<{
           user: {
             id: number;
@@ -39,7 +37,6 @@ export const AuthProvider: IAuthProvider = {
       >('/auth/me', {
         headers: { authorization: `Bearer ${token}` },
       });
-      console.log('user id', res.data.data.user.id);
     } catch (err) {
       console.log('check auth error: ', err);
       throw err;
