@@ -111,6 +111,7 @@ func runServer(c *Config) {
 			rtr.Use(api.authorizationMiddleware)
 			rtr.Post("/new", api.registerNewSourceServer)
 			rtr.Get("/list", api.getListOfSourceServers)
+			rtr.Get("/:srvId/files", api.getSourceServerFilesList)
 		})
 	}, "APIv1")
 
