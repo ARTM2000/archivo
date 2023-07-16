@@ -7,6 +7,7 @@ import { Dashboard } from './components/home/dashboard';
 import { SourceServerList } from './components/sourceservers/list';
 import StorageSharpIcon from '@mui/icons-material/StorageSharp';
 import { SourceServerCreate } from './components/sourceservers/create';
+import { Route, Routes } from 'react-router-dom';
 
 function App() {
   return (
@@ -25,6 +26,9 @@ function App() {
           hasEdit={false}
           icon={StorageSharpIcon}
         ></Resource>
+        <Routes>
+          <Route></Route>
+        </Routes>
       </Admin>
     </>
   );

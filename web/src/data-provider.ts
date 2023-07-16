@@ -46,7 +46,7 @@ export const DataProvider: Partial<IDataProvider> = {
       },
     });
 
-    const data = response.data.data
+    const data = response.data.data;
     return {
       data: {
         ...params.data,

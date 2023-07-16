@@ -53,13 +53,24 @@ export const SourceServerCreate = () => {
           <TextInput source="name" validate={required('name is required')} />
         </SimpleForm>
       </Create>
-      <Dialog open={open} onClose={handleDialogClose} maxWidth='sm'>
+      <Dialog open={open} onClose={handleDialogClose} maxWidth="sm">
         <DialogTitle>Credentials</DialogTitle>
         <DialogContent>
           <Typography variant="h6">API Key</Typography>
-          <Typography variant='body2' component='code' style={{display: 'block'}}>{apiKey}</Typography>
+          <Typography
+            variant="body2"
+            component="code"
+            style={{ display: 'block' }}
+          >
+            {apiKey}
+          </Typography>
           <br />
-          <Typography variant='body2' fontWeight="lightbold" component="small" style={{color: 'red'}}>
+          <Typography
+            variant="body2"
+            fontWeight="lightbold"
+            component="small"
+            style={{ color: 'red' }}
+          >
             Warning: Keep this credential somewhere safe as it is not accessible
             after quitting this page
           </Typography>
