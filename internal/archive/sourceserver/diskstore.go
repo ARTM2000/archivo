@@ -249,9 +249,7 @@ func (ds *DiskStore) FilesList(srcSrvName string) ([]FileList, error) {
 
 	var filenamesList []string
 	for _, ent := range ents {
-		if !ent.IsDir() {
-			filenamesList = append(filenamesList, ent.Name())
-		}
+		filenamesList = append(filenamesList, ent.Name())
 	}
 
 	// sort files by their

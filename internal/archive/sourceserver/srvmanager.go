@@ -41,9 +41,9 @@ type SrvManager struct {
 }
 
 type FileList struct {
-	ID        uint32 `json:"id"`
-	FileName  string `json:"filename"`
-	Snapshots int
+	ID        uint32    `json:"id"`
+	FileName  string    `json:"filename"`
+	Snapshots int       `json:"snapshots"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
@@ -286,6 +286,9 @@ func (sm *SrvManager) GetListOfSourceServerFiles(srcSrvId uint, options FindAllO
 
 	start := options.Start
 	end := options.End
+	if end > len(filesList) {
+		end = len(filesList)
+	}
 	finalList := filesList[start:end]
 
 	return &finalList, uint32(len(filesList)), nil

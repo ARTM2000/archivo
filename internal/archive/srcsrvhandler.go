@@ -93,12 +93,12 @@ func (api *API) getSourceServerFilesList(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
 	}
 
-	var ldata listData
-	if err := c.QueryParser(&ldata); err != nil {
+	var lData listData
+	if err := c.QueryParser(&lData); err != nil {
 		log.Default().Println(err.Error())
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
-	if errs, ok := validate.ValidateStruct[listData](&ldata); !ok {
+	if errs, ok := validate.ValidateStruct[listData](&lData); !ok {
 		log.Default().Println(errs[0].Message)
 		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
 	}
@@ -112,13 +112,22 @@ func (api *API) getSourceServerFilesList(c *fiber.Ctx) error {
 		sourceserver.NewSrvRepository(api.DB),
 	)
 
+	if lData.Start == nil {
+		var initialStart = 0
+		lData.Start = &initialStart
+	}
+	if lData.End == nil {
+		var initialEnd = 10
+		lData.End = &initialEnd
+	}
+
 	filesList, total, err := srcsrvManager.GetListOfSourceServerFiles(
 		params.SrvId,
 		sourceserver.FindAllOption{
-			SortBy:    ldata.SortBy,
-			SortOrder: ldata.SortOrder,
-			Start:     *ldata.Start,
-			End:       *ldata.End,
+			SortBy:    lData.SortBy,
+			SortOrder: lData.SortOrder,
+			Start:     *lData.Start,
+			End:       *lData.End,
 		},
 	)
 	if err != nil {
