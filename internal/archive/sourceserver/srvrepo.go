@@ -3,6 +3,7 @@ package sourceserver
 import (
 	"errors"
 	"log"
+	"time"
 
 	"github.com/ARTM2000/archive1/internal/archive/xerrors"
 	"gorm.io/gorm"
@@ -10,9 +11,10 @@ import (
 )
 
 type SourceServer struct {
-	ID           uint   `gorm:"primaryKey;not null" json:"id"`
-	Name         string `gorm:"type:string;not null;unique" json:"name"`
-	HashedAPIKey string `gorm:"type:string;not null" json:"-"`
+	ID           uint      `gorm:"primaryKey;not null" json:"id"`
+	Name         string    `gorm:"type:string;not null;unique" json:"name"`
+	HashedAPIKey string    `gorm:"type:string;not null" json:"-"`
+	CreatedAt    time.Time `gorm:"autoUpdateTime:milli" json:"created_at"`
 }
 
 func NewSrvRepository(db *gorm.DB) SrvRepository {
