@@ -15,9 +15,15 @@ export const DataProvider: Partial<IDataProvider> = {
   ): Promise<GetListResult<any>> => {
     const { page, perPage } = params.pagination;
     const { field, order } = params.sort;
+
+    let url = `/${resource}`;
+    if (resource === "files") {
+      url = `/servers/${params.meta.serverId}/files`
+    }
+
     const response = await HttpAgent.get<
       ArchiveResponse<{ list: any[]; total: number }>
-    >(`/${resource}/list`, {
+    >(url, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}`,
       },
@@ -32,7 +38,7 @@ export const DataProvider: Partial<IDataProvider> = {
 
     const data = response.data.data;
     return {
-      data: data.list,
+      data: data.list || [],
       total: data.total,
     };
   },
