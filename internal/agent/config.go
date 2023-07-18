@@ -14,7 +14,7 @@ type File struct {
 	Path     string `mapstructure:"path" json:"path" validate:"required,filepath"`
 	Interval string `mapstructure:"interval" json:"interval" validate:"required"`
 	Rotate   int64  `mapstructure:"rotate" json:"rotate" validate:"omitempty,required,number"`
-	Filename string `mapstructure:"filename" json:"filename" validate:"omitempty,required,filename"`
+	Filename string `mapstructure:"filename" json:"filename" validate:"omitempty,required,filename,alphanum"`
 }
 
 func (f *File) String() string {
