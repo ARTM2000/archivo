@@ -22,7 +22,7 @@ type registerNewSourceServer struct {
 
 type rotateSrcSrvFile struct {
 	File     *multipart.FileHeader `form:"file" validate:"required"`
-	FileName string                `form:"filename" validate:"omitempty,filename"`
+	FileName string                `form:"filename" validate:"omitempty,filename,alphanum"`
 	Rotate   int                   `form:"rotate" validate:"required,number"`
 }
 
