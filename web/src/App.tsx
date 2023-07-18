@@ -7,7 +7,8 @@ import { Dashboard } from './components/home/dashboard';
 import { SourceServerList } from './components/sourceservers/list';
 import StorageSharpIcon from '@mui/icons-material/StorageSharp';
 import { SourceServerCreate } from './components/sourceservers/create';
-import { Route, Routes } from 'react-router-dom';
+import { Route } from 'react-router-dom';
+import { FilesList } from './components/files/list';
 
 function App() {
   return (
@@ -25,10 +26,9 @@ function App() {
           create={SourceServerCreate}
           hasEdit={false}
           icon={StorageSharpIcon}
-        ></Resource>
-        <Routes>
-          <Route></Route>
-        </Routes>
+        >
+          <Route path=':serverId/files' element={<FilesList/>} />
+        </Resource>
       </Admin>
     </>
   );
