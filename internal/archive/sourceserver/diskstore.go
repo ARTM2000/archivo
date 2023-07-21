@@ -280,8 +280,8 @@ func (ds *DiskStore) FilesList(srcSrvName string) ([]FileList, error) {
 	return filesList, nil
 }
 
-func (ds *DiskStore) ByteCountBinary(b int64) string {
-	const unit = 1024
+func (ds *DiskStore) ByteCountDecimal(b int64) string {
+	const unit = 1000
 	if b < unit {
 		return fmt.Sprintf("%d B", b)
 	}
@@ -346,7 +346,7 @@ func (ds *DiskStore) SnapshotsList(srcSrvName, filename string) ([]SnapshotList,
 		snp := SnapshotList{
 			ID:        uint32(i + 1),
 			Name:      snpName,
-			Size:      ds.ByteCountBinary(snpInfo.Size()),
+			Size:      ds.ByteCountDecimal(snpInfo.Size()),
 			Checksum:  fmt.Sprintf("%x", hash.Sum(nil)),
 			CreatedAt: snpInfo.ModTime(),
 		}
