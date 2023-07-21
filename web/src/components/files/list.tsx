@@ -1,10 +1,17 @@
 import { Checkbox, TableCell, TableRow } from '@mui/material';
 import React from 'react';
-import { Datagrid, DatagridBody, DateField, List, RecordContextProvider, TextField } from 'react-admin';
+import {
+  Datagrid,
+  DatagridBody,
+  DateField,
+  List,
+  RecordContextProvider,
+  TextField,
+} from 'react-admin';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const MyDatagridRow = (props: {
-  record: { id: number; filename: string, snapshots: number, updated_at: Date };
+  record: { id: number; filename: string; snapshots: number; updated_at: Date };
   id: number;
   onToggleItem: Function;
   children: any;
@@ -42,7 +49,11 @@ const MyDatagridBody = (props: any) => (
   <DatagridBody {...props} row={<MyDatagridRow {...props} />} />
 );
 const MyDatagrid = (props: any) => (
-  <Datagrid {...props} style={{cursor: "pointer"}} body={<MyDatagridBody />} />
+  <Datagrid
+    {...props}
+    style={{ cursor: 'pointer' }}
+    body={<MyDatagridBody />}
+  />
 );
 
 export const FilesList = () => {

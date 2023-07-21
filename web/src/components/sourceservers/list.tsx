@@ -47,7 +47,11 @@ const MyDatagridBody = (props: any) => (
   <DatagridBody {...props} row={<MyDatagridRow {...props} />} />
 );
 const MyDatagrid = (props: any) => (
-  <Datagrid {...props} style={{cursor: "pointer"}} body={<MyDatagridBody />} />
+  <Datagrid
+    {...props}
+    style={{ cursor: 'pointer' }}
+    body={<MyDatagridBody />}
+  />
 );
 
 export const SourceServerList = () => {

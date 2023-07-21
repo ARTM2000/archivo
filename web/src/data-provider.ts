@@ -19,7 +19,8 @@ export const DataProvider: Partial<IDataProvider> = {
     }
     if (resource === 'snapshot') {
       url = `/servers/${params.meta.serverId}/files/${params.meta.filename}`;
-      if (params.sort.field === "id") params.sort.field = params.meta.sort.DefaultBy  
+      if (params.sort.field === 'id')
+        params.sort.field = params.meta.sort.DefaultBy;
     }
 
     const { page, perPage } = params.pagination;

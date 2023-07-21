@@ -28,8 +28,11 @@ function App() {
           hasEdit={false}
           icon={StorageSharpIcon}
         >
-          <Route path=':serverId/files' element={<FilesList/>} />
-          <Route path=':serverId/files/:filename' element={<FileSnapshotsShow/>} />
+          <Route path=":serverId/files" element={<FilesList />} />
+          <Route
+            path=":serverId/files/:filename"
+            element={<FileSnapshotsShow />}
+          />
         </Resource>
       </Admin>
     </>
