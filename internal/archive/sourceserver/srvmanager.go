@@ -48,6 +48,7 @@ type FileList struct {
 }
 
 type SnapshotList struct {
+	ID        uint32    `json:"id"`
 	Name      string    `json:"name"`
 	Size      string    `json:"size"`
 	CreatedAt time.Time `json:"created_at"`
@@ -261,31 +262,31 @@ func (sm *SrvManager) GetListOfSourceServerFiles(srcSrvId uint, options FindAllO
 	switch options.SortBy {
 	case "id":
 		sort.Slice(filesList, func(i, j int) bool {
-			if options.SortOrder == "ASC" {
-				return filesList[i].ID > filesList[j].ID
+			if options.SortOrder == "DESC" {
+				return filesList[i].ID < filesList[j].ID
 			}
-			return filesList[i].ID < filesList[j].ID
+			return filesList[i].ID > filesList[j].ID
 		})
 	case "filename":
 		sort.Slice(filesList, func(i, j int) bool {
-			if options.SortOrder == "ASC" {
-				return filesList[i].FileName > filesList[j].FileName
+			if options.SortOrder == "DESC" {
+				return filesList[i].FileName < filesList[j].FileName
 			}
-			return filesList[i].FileName < filesList[j].FileName
+			return filesList[i].FileName > filesList[j].FileName
 		})
 	case "snapshots":
 		sort.Slice(filesList, func(i, j int) bool {
-			if options.SortOrder == "ASC" {
-				return filesList[i].Snapshots > filesList[j].Snapshots
+			if options.SortOrder == "DESC" {
+				return filesList[i].Snapshots < filesList[j].Snapshots
 			}
-			return filesList[i].Snapshots < filesList[j].Snapshots
+			return filesList[i].Snapshots > filesList[j].Snapshots
 		})
 	case "updated_at":
 		sort.Slice(filesList, func(i, j int) bool {
-			if options.SortOrder == "ASC" {
-				return filesList[i].UpdatedAt.After(filesList[j].UpdatedAt)
+			if options.SortOrder == "DESC" {
+				return filesList[j].UpdatedAt.After(filesList[i].UpdatedAt)
 			}
-			return filesList[j].UpdatedAt.After(filesList[i].UpdatedAt)
+			return filesList[i].UpdatedAt.After(filesList[j].UpdatedAt)
 		})
 	default:
 		log.Default().Printf("sortBy not defined, sortBy: '%s'", options.SortBy)
@@ -335,24 +336,24 @@ func (sm *SrvManager) GetListOfFileSnapshotsByFilenameAndSrvId(srcSrvId uint, fi
 	switch options.SortBy {
 	case "name":
 		sort.Slice(snapshots, func(i, j int) bool {
-			if options.SortOrder == "ASC" {
-				return snapshots[i].Name > snapshots[j].Name
+			if options.SortOrder == "DESC" {
+				return snapshots[i].Name < snapshots[j].Name
 			}
-			return snapshots[i].Name < snapshots[j].Name
+			return snapshots[i].Name > snapshots[j].Name
 		})
 	case "size":
 		sort.Slice(snapshots, func(i, j int) bool {
-			if options.SortOrder == "ASC" {
-				return snapshots[i].Size > snapshots[j].Size
+			if options.SortOrder == "DESC" {
+				return snapshots[i].Size < snapshots[j].Size
 			}
-			return snapshots[i].Size < snapshots[j].Size
+			return snapshots[i].Size > snapshots[j].Size
 		})
 	case "updated_at":
 		sort.Slice(snapshots, func(i, j int) bool {
-			if options.SortOrder == "ASC" {
-				return snapshots[i].CreatedAt.After(snapshots[j].CreatedAt)
+			if options.SortOrder == "DESC" {
+				return snapshots[j].CreatedAt.After(snapshots[i].CreatedAt)
 			}
-			return snapshots[j].CreatedAt.After(snapshots[i].CreatedAt)
+			return snapshots[i].CreatedAt.After(snapshots[j].CreatedAt)
 		})
 	default:
 		log.Default().Printf("sortBy not defined, sortBy: '%s'", options.SortBy)
