@@ -9,6 +9,7 @@ import StorageSharpIcon from '@mui/icons-material/StorageSharp';
 import { SourceServerCreate } from './components/sourceservers/create';
 import { Route } from 'react-router-dom';
 import { FilesList } from './components/files/list';
+import { FileSnapshotsShow } from './components/files/show';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           icon={StorageSharpIcon}
         >
           <Route path=':serverId/files' element={<FilesList/>} />
+          <Route path=':serverId/files/:filename' element={<FileSnapshotsShow/>} />
         </Resource>
       </Admin>
     </>
