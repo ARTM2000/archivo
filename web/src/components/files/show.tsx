@@ -1,5 +1,7 @@
+import { IconButton } from '@mui/material';
 import { Datagrid, DateField, List, TextField } from 'react-admin';
 import { useParams } from 'react-router-dom';
+import DownloadIcon from '@mui/icons-material/Download';
 
 export const FileSnapshotsShow = () => {
   const params = useParams();
@@ -14,6 +16,7 @@ export const FileSnapshotsShow = () => {
           sort: { DefaultBy: 'name' },
         },
       }}
+      exporter={false}
     >
       <Datagrid>
         <TextField source="id" label="ID" />
@@ -33,6 +36,9 @@ export const FileSnapshotsShow = () => {
             day: 'numeric',
           }}
         />
+        <IconButton onClick={(e) => {}}>
+          <DownloadIcon />
+        </IconButton>
       </Datagrid>
     </List>
   );

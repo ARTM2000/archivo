@@ -18,4 +18,5 @@ var (
 	ErrRotateGlobalLimitReached              = errors.New("file rotate is more than global file rotate count")
 	ErrNoStoreForSourceServer                = errors.New("no store exists for source server")
 	ErrNoFileStoredOnSourceServerByThisName  = errors.New("no file stores on source server by this filename")
+	ErrSnapshotNotFound                      = errors.New("unable to locate this snapshot")
 )

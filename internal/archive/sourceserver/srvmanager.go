@@ -6,8 +6,10 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"log"
 	"mime/multipart"
+	"net/http"
 	"sort"
 	"strings"
 	"time"
@@ -61,6 +63,7 @@ type StoreManager interface {
 	FileStoreValidate(srcSrvName, fileName string, rotate int) error
 	FilesList(srcSrvName string) ([]FileList, error)
 	SnapshotsList(srcSrvName, filename string) ([]SnapshotList, error)
+	ReadSnapshot(srcSrvName, filename, snapshot string) (*[]byte, error)
 }
 
 func (sm *SrvManager) generateAPIKey() (string, error) {
@@ -349,7 +352,7 @@ func (sm *SrvManager) GetListOfFileSnapshotsByFilenameAndSrvId(srcSrvId uint, fi
 			}
 			return snapshots[i].Size > snapshots[j].Size
 		})
-	case "updated_at":
+	case "created_at":
 		sort.Slice(snapshots, func(i, j int) bool {
 			if options.SortOrder == "DESC" {
 				return snapshots[j].CreatedAt.After(snapshots[i].CreatedAt)
@@ -368,4 +371,45 @@ func (sm *SrvManager) GetListOfFileSnapshotsByFilenameAndSrvId(srcSrvId uint, fi
 	finalList := snapshots[start:end]
 
 	return &finalList, uint32(len(snapshots)), nil
+}
+
+func (sm *SrvManager) ReadSnapshot(srcSrvId uint, filename, snapshot string) (*[]byte, string, error) {
+	srv, err := sm.srvRepository.FindSrvWithId(srcSrvId)
+
+	if err != nil {
+		if errors.Is(err, xerrors.ErrRecordNotFound) {
+			log.Default().Printf("source server with ID '%d' not exists\n", srcSrvId)
+			return nil, "", xerrors.ErrRecordNotFound
+		}
+
+		log.Default().Printf("[Unhandled] finding source server with ID '%d' failed, error: %s", srcSrvId, err.Error())
+		return nil, "", xerrors.ErrUnhandled
+	}
+
+	storeManager := sm.getStoreManager()
+	snapshotByte, err := storeManager.ReadSnapshot(srv.Name, filename, snapshot)
+
+	if err != nil {
+		if errors.Is(err, xerrors.ErrSnapshotNotFound) {
+			log.Default().Println("snapshot not found")
+			return nil, "", err
+		}
+
+		return nil, "", err
+	}
+
+	ext := strings.Split(http.DetectContentType(*snapshotByte), "/")[1]
+	if ext == "octet-stream" {
+		// in case that mime type not detected, set extension to "txt"
+		ext = "txt"
+	}
+	log.Default().Println("ext >>", ext)
+	var finalName string
+	if strings.Contains(ext, "plain") {
+		finalName = fmt.Sprintf("%d-%s-%s", srcSrvId, strings.ReplaceAll(filename, ".", ""), snapshot)
+	} else {
+		finalName = fmt.Sprintf("%d-%s-%s.%s", srcSrvId, strings.ReplaceAll(filename, ".", ""), snapshot, ext)
+	}
+
+	return snapshotByte, finalName, nil
 }

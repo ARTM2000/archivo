@@ -355,3 +355,20 @@ func (ds *DiskStore) SnapshotsList(srcSrvName, filename string) ([]SnapshotList,
 
 	return snshList, nil
 }
+
+func (ds *DiskStore) ReadSnapshot(srcSrvName, filename, snapshot string) (*[]byte, error) {
+	snapshotPath := path.Join(ds.Config.Path, srcSrvName, filename, snapshot)
+	f, err := os.ReadFile(snapshotPath)
+	if err != nil {
+		log.Default().Printf(
+			"error in reading snapshot file for server '%s' filename '%s' snapshot '%s', error: %+v", 
+			srcSrvName, filename, snapshot, err,
+		)
+		if os.IsNotExist(err) {
+			return nil, xerrors.ErrSnapshotNotFound
+		}
+		return nil, xerrors.ErrUnhandled
+	}
+
+	return &f, nil
+}

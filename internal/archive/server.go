@@ -113,6 +113,7 @@ func runServer(c *Config) {
 			rtr.Post("/new", api.registerNewSourceServer)
 			rtr.Get("/:srvId/files", api.getSourceServerFilesList)
 			rtr.Get("/:srvId/files/:filename", api.getListOfFileSnapshots)
+			rtr.Get("/:srvId/files/:filename/:snapshot/download", api.downloadSnapshot)
 		})
 	}, "APIv1")
 

@@ -2,6 +2,7 @@ package archive
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"mime/multipart"
 	"strings"
@@ -27,7 +28,7 @@ type rotateSrcSrvFile struct {
 }
 
 type listData struct {
-	SortBy    string `query:"sort_by" validate:"alphanum"`
+	SortBy    string `query:"sort_by" validate:"required"`
 	SortOrder string `query:"sort_order" validate:"required"`
 	Start     *int   `query:"start" validate:"omitempty,number"`
 	End       *int   `query:"end" validate:"omitempty,number"`
@@ -36,6 +37,11 @@ type listData struct {
 type snapshotListData struct {
 	SrvId    uint   `params:"srvId" validate:"required,number"`
 	Filename string `params:"filename" validate:"required"`
+}
+
+type downloadSnapshotData struct {
+	snapshotListData
+	Snapshot string `params:"snapshot" validate:"required"`
 }
 
 func (api *API) getListOfSourceServers(c *fiber.Ctx) error {
@@ -195,7 +201,7 @@ func (api *API) getListOfFileSnapshots(c *fiber.Ctx) error {
 		sourceserver.NewSrvRepository(api.DB),
 	)
 
-	filesList, total, err := srcsrvManager.GetListOfFileSnapshotsByFilenameAndSrvId(
+	snapshotsList, total, err := srcsrvManager.GetListOfFileSnapshotsByFilenameAndSrvId(
 		params.SrvId,
 		params.Filename,
 		sourceserver.FindAllOption{
@@ -211,7 +217,7 @@ func (api *API) getListOfFileSnapshots(c *fiber.Ctx) error {
 		if errors.Is(err, xerrors.ErrNoStoreForSourceServer) || errors.Is(err, xerrors.ErrNoFileStoredOnSourceServerByThisName) {
 			return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
 				Data: map[string]interface{}{
-					"list":  filesList,
+					"list":  snapshotsList,
 					"total": total,
 				},
 			}))
@@ -222,10 +228,47 @@ func (api *API) getListOfFileSnapshots(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
 		Data: map[string]interface{}{
-			"list":  filesList,
+			"list":  snapshotsList,
 			"total": total,
 		},
 	}))
+}
+
+func (api *API) downloadSnapshot(c *fiber.Ctx) error {
+	params := downloadSnapshotData{}
+	if err := c.ParamsParser(&params); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+	if errs, ok := validate.ValidateStruct[downloadSnapshotData](&params); !ok {
+		log.Default().Println(errs[0].Message)
+		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
+	}
+
+	srcsrvManager := sourceserver.NewSrvManager(
+		sourceserver.SrvConfig{
+			CorrelationId:   c.GetRespHeader(fiber.HeaderXRequestID),
+			StoreMode:       api.Config.FileStore.Mode,
+			DiskStoreConfig: sourceserver.DiskStoreConfig(api.Config.FileStore.DiskConfig),
+		},
+		sourceserver.NewSrvRepository(api.DB),
+	)
+
+	snapshotByte, filename, err := srcsrvManager.ReadSnapshot(params.SrvId, params.Filename, params.Snapshot)
+	if err != nil {
+		if errors.Is(err, xerrors.ErrSnapshotNotFound) {
+			return fiber.NewError(fiber.StatusNotFound, err.Error())
+		}
+		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+	}
+
+	c.Append(fiber.HeaderContentType, "application/octet-stream")
+	c.Append(fiber.HeaderContentDisposition, fmt.Sprintf("attachment; filename=%s", filename))
+	_, err = c.Status(fiber.StatusOK).Write(*snapshotByte)
+	if err != nil {
+		log.Default().Printf("error in writing file to response, error: %+v", err)
+		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+	}
+	return nil
 }
 
 func (api *API) registerNewSourceServer(c *fiber.Ctx) error {
