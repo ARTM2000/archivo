@@ -51,6 +51,7 @@ type SnapshotList struct {
 	ID        uint32    `json:"id"`
 	Name      string    `json:"name"`
 	Size      string    `json:"size"`
+	Checksum  string    `json:"checksum"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

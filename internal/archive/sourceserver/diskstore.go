@@ -1,6 +1,7 @@
 package sourceserver
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -335,10 +336,18 @@ func (ds *DiskStore) SnapshotsList(srcSrvName, filename string) ([]SnapshotList,
 		}
 		snpPath := path.Join(filenameStorePath, snpName)
 		snpInfo, _ := os.Stat(snpPath)
+
+		// calculate file checksum
+		f, _ := os.Open(snpPath)
+		hash := sha256.New()
+		io.Copy(hash, f)
+		f.Close()
+
 		snp := SnapshotList{
 			ID:        uint32(i + 1),
 			Name:      snpName,
 			Size:      ds.ByteCountBinary(snpInfo.Size()),
+			Checksum:  fmt.Sprintf("%x", hash.Sum(nil)),
 			CreatedAt: snpInfo.ModTime(),
 		}
 		snshList = append(snshList, snp)
