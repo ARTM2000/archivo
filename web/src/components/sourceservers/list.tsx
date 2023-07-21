@@ -24,7 +24,6 @@ const MyDatagridRow = (props: {
     <RecordContextProvider value={record}>
       <TableRow
         onClick={() => {
-          console.log('record > ', record);
           history(`${id}/files`);
         }}
       >
@@ -48,7 +47,7 @@ const MyDatagridBody = (props: any) => (
   <DatagridBody {...props} row={<MyDatagridRow {...props} />} />
 );
 const MyDatagrid = (props: any) => (
-  <Datagrid {...props} body={<MyDatagridBody />} />
+  <Datagrid {...props} style={{cursor: "pointer"}} body={<MyDatagridBody />} />
 );
 
 export const SourceServerList = () => {
