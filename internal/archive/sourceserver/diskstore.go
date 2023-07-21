@@ -319,15 +319,25 @@ func (ds *DiskStore) SnapshotsList(srcSrvName, filename string) ([]SnapshotList,
 		return nil, xerrors.ErrUnhandled
 	}
 
-	var snshList []SnapshotList
+	var snapshotNameList []string
 	for _, ent := range ents {
-		if ent.Name() == metaFilename {
+		if ent.Name() != metaFilename {
+			snapshotNameList = append(snapshotNameList, ent.Name())
+		}
+	}
+	// sort files by their
+	sort.Strings(snapshotNameList)
+
+	var snshList []SnapshotList
+	for i, snpName := range snapshotNameList {
+		if snpName == metaFilename {
 			continue
 		}
-		snpPath := path.Join(filenameStorePath, ent.Name())
+		snpPath := path.Join(filenameStorePath, snpName)
 		snpInfo, _ := os.Stat(snpPath)
 		snp := SnapshotList{
-			Name:      ent.Name(),
+			ID:        uint32(i + 1),
+			Name:      snpName,
 			Size:      ds.ByteCountBinary(snpInfo.Size()),
 			CreatedAt: snpInfo.ModTime(),
 		}
