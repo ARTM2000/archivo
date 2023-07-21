@@ -13,13 +13,17 @@ export const DataProvider: Partial<IDataProvider> = {
     resource: string,
     params: GetListParams,
   ): Promise<GetListResult<any>> => {
+    let url = `/${resource}`;
+    if (resource === 'files') {
+      url = `/servers/${params.meta.serverId}/files`;
+    }
+    if (resource === 'snapshot') {
+      url = `/servers/${params.meta.serverId}/files/${params.meta.filename}`;
+      if (params.sort.field === "id") params.sort.field = params.meta.sort.DefaultBy  
+    }
+
     const { page, perPage } = params.pagination;
     const { field, order } = params.sort;
-
-    let url = `/${resource}`;
-    if (resource === "files") {
-      url = `/servers/${params.meta.serverId}/files`
-    }
 
     const response = await HttpAgent.get<
       ArchiveResponse<{ list: any[]; total: number }>
@@ -31,7 +35,7 @@ export const DataProvider: Partial<IDataProvider> = {
         sort_by: field,
         sort_order: order,
         start: (page - 1) * perPage,
-        end: page * perPage - 1,
+        end: page * perPage,
         filter: JSON.stringify(params.filter),
       },
     });
