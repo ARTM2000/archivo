@@ -47,11 +47,18 @@ type FileList struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type SnapshotList struct {
+	Name      string    `json:"name"`
+	Size      string    `json:"size"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type StoreManager interface {
-	FileStore(srcSrvName string, fileName string, file *multipart.FileHeader, correlationId string) error
-	FileRotate(srcSrvName string, fileName string, rotate int, correlationId string) error
-	FileStoreValidate(srcSrvName string, fileName string, rotate int) error
+	FileStore(srcSrvName, fileName string, file *multipart.FileHeader, correlationId string) error
+	FileRotate(srcSrvName, fileName string, rotate int, correlationId string) error
+	FileStoreValidate(srcSrvName, fileName string, rotate int) error
 	FilesList(srcSrvName string) ([]FileList, error)
+	SnapshotsList(srcSrvName, filename string) ([]SnapshotList, error)
 }
 
 func (sm *SrvManager) generateAPIKey() (string, error) {
@@ -292,4 +299,71 @@ func (sm *SrvManager) GetListOfSourceServerFiles(srcSrvId uint, options FindAllO
 	finalList := filesList[start:end]
 
 	return &finalList, uint32(len(filesList)), nil
+}
+
+func (sm *SrvManager) GetListOfFileSnapshotsByFilenameAndSrvId(srcSrvId uint, filename string, options FindAllOption) (*[]SnapshotList, uint32, error) {
+	srv, err := sm.srvRepository.FindSrvWithId(srcSrvId)
+
+	if err != nil {
+		if errors.Is(err, xerrors.ErrRecordNotFound) {
+			log.Default().Printf("source server with ID '%d' not exists\n", srcSrvId)
+			return nil, 0, xerrors.ErrRecordNotFound
+		}
+
+		log.Default().Printf("[Unhandled] finding source server with ID '%d' failed, error: %s", srcSrvId, err.Error())
+		return nil, 0, xerrors.ErrUnhandled
+	}
+
+	storeManager := sm.getStoreManager()
+	snapshots, err := storeManager.SnapshotsList(srv.Name, filename)
+
+	if err != nil {
+		if errors.Is(err, xerrors.ErrNoStoreForSourceServer) {
+			log.Default().Printf("no store found for source server '%s' by id '%d'\n", srv.Name, srv.ID)
+			return nil, 0, err
+		}
+
+		if errors.Is(err, xerrors.ErrNoFileStoredOnSourceServerByThisName) {
+			log.Default().Printf("no store found for source server '%s' by id '%d' for filename '%s'\n", srv.Name, srv.ID, filename)
+			return nil, 0, err
+		}
+
+		log.Default().Printf("[Unhandled] error in finding file snapshots for source server by name '%s' with filename '%s', error: %s", srv.Name, filename, err)
+		return nil, 0, xerrors.ErrUnhandled
+	}
+
+	switch options.SortBy {
+	case "name":
+		sort.Slice(snapshots, func(i, j int) bool {
+			if options.SortOrder == "ASC" {
+				return snapshots[i].Name > snapshots[j].Name
+			}
+			return snapshots[i].Name < snapshots[j].Name
+		})
+	case "size":
+		sort.Slice(snapshots, func(i, j int) bool {
+			if options.SortOrder == "ASC" {
+				return snapshots[i].Size > snapshots[j].Size
+			}
+			return snapshots[i].Size < snapshots[j].Size
+		})
+	case "updated_at":
+		sort.Slice(snapshots, func(i, j int) bool {
+			if options.SortOrder == "ASC" {
+				return snapshots[i].CreatedAt.After(snapshots[j].CreatedAt)
+			}
+			return snapshots[j].CreatedAt.After(snapshots[i].CreatedAt)
+		})
+	default:
+		log.Default().Printf("sortBy not defined, sortBy: '%s'", options.SortBy)
+	}
+
+	start := options.Start
+	end := options.End
+	if end > len(snapshots) {
+		end = len(snapshots)
+	}
+	finalList := snapshots[start:end]
+
+	return &finalList, uint32(len(snapshots)), nil
 }

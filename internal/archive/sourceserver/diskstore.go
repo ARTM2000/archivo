@@ -2,6 +2,7 @@ package sourceserver
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"mime/multipart"
@@ -31,6 +32,8 @@ type DiskStoreConfig struct {
 type DiskStore struct {
 	Config DiskStoreConfig
 }
+
+const metaFilename = ".archive1.meta"
 
 func (ds *DiskStore) FileStore(srcSrvName string, fileName string, file *multipart.FileHeader, correlationId string) error {
 	// check if directory exist
@@ -113,7 +116,7 @@ func (ds *DiskStore) FileStoreValidate(srcSrvName string, fileName string, rotat
 		return err
 	}
 
-	metaFilePath := path.Join(storePath, ".archive1.meta")
+	metaFilePath := path.Join(storePath, metaFilename)
 	metaF, err := os.Open(metaFilePath)
 	if err != nil {
 		log.Default().Println("error in opening meta file, error: ", err.Error())
@@ -156,13 +159,13 @@ func (ds *DiskStore) FileRotate(srcSrvName string, fileName string, rotate int, 
 
 	var fileSnapshotNames []string
 	for _, ent := range ents {
-		if ent.Name() != ".archive1.meta" {
+		if ent.Name() != metaFilename {
 			fileSnapshotNames = append(fileSnapshotNames, ent.Name())
 		}
 	}
 
 	// if rotate meta file not found, create it
-	metaFilePath := path.Join(storePath, ".archive1.meta")
+	metaFilePath := path.Join(storePath, metaFilename)
 	metaF, err := os.Create(metaFilePath)
 	if err != nil {
 		log.Default().Println("error in writing meta file. error: ", err.Error())
@@ -274,4 +277,62 @@ func (ds *DiskStore) FilesList(srcSrvName string) ([]FileList, error) {
 	}
 
 	return filesList, nil
+}
+
+func (ds *DiskStore) ByteCountBinary(b int64) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(b)/float64(div), "KMGTPE"[exp])
+}
+
+func (ds *DiskStore) SnapshotsList(srcSrvName, filename string) ([]SnapshotList, error) {
+
+	// check that is there any directory for requested source server or not
+	srcSrvStorePath := path.Join(ds.Config.Path, srcSrvName)
+	_, err := os.ReadDir(srcSrvStorePath)
+
+	if err != nil {
+		log.Default().Println("error in reading source server store directory, error:", err.Error())
+		if os.IsNotExist(err) {
+			return nil, xerrors.ErrNoStoreForSourceServer
+		}
+		return nil, xerrors.ErrUnhandled
+	}
+
+	filenameStorePath := path.Join(srcSrvStorePath, filename)
+	ents, err := os.ReadDir(filenameStorePath)
+	if err != nil {
+		log.Default().Printf(
+			"error in reading source server '%s' filename '%s' store directory, error: '%s'",
+			srcSrvName, filename, err.Error(),
+		)
+		if os.IsNotExist(err) {
+			return nil, xerrors.ErrNoFileStoredOnSourceServerByThisName
+		}
+		return nil, xerrors.ErrUnhandled
+	}
+
+	var snshList []SnapshotList
+	for _, ent := range ents {
+		if ent.Name() == metaFilename {
+			continue
+		}
+		snpPath := path.Join(filenameStorePath, ent.Name())
+		snpInfo, _ := os.Stat(snpPath)
+		snp := SnapshotList{
+			Name:      ent.Name(),
+			Size:      ds.ByteCountBinary(snpInfo.Size()),
+			CreatedAt: snpInfo.ModTime(),
+		}
+		snshList = append(snshList, snp)
+	}
+
+	return snshList, nil
 }

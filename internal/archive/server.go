@@ -112,6 +112,7 @@ func runServer(c *Config) {
 			rtr.Get("/", api.getListOfSourceServers)
 			rtr.Post("/new", api.registerNewSourceServer)
 			rtr.Get("/:srvId/files", api.getSourceServerFilesList)
+			rtr.Get("/:srvId/files/:filename", api.getListOfFileSnapshots)
 		})
 	}, "APIv1")
 

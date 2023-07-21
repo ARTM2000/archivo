@@ -33,6 +33,11 @@ type listData struct {
 	End       *int   `query:"end" validate:"omitempty,number"`
 }
 
+type snapshotListData struct {
+	SrvId    uint   `params:"srvId" validate:"required,number"`
+	Filename string `params:"filename" validate:"required"`
+}
+
 func (api *API) getListOfSourceServers(c *fiber.Ctx) error {
 	var data listData
 	if err := c.QueryParser(&data); err != nil {
@@ -133,6 +138,77 @@ func (api *API) getSourceServerFilesList(c *fiber.Ctx) error {
 	if err != nil {
 		log.Default().Printf("error in getting files list of source server by id '%d'. error: %s", params.SrvId, err.Error())
 		if errors.Is(err, xerrors.ErrNoStoreForSourceServer) {
+			return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+				Data: map[string]interface{}{
+					"list":  filesList,
+					"total": total,
+				},
+			}))
+		}
+
+		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+		Data: map[string]interface{}{
+			"list":  filesList,
+			"total": total,
+		},
+	}))
+}
+
+func (api *API) getListOfFileSnapshots(c *fiber.Ctx) error {
+	params := snapshotListData{}
+	if err := c.ParamsParser(&params); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+	if errs, ok := validate.ValidateStruct[snapshotListData](&params); !ok {
+		log.Default().Println(errs[0].Message)
+		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
+	}
+
+	var lData listData
+	if err := c.QueryParser(&lData); err != nil {
+		log.Default().Println(err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+	if errs, ok := validate.ValidateStruct[listData](&lData); !ok {
+		log.Default().Println(errs[0].Message)
+		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
+	}
+
+	if lData.Start == nil {
+		var initialStart = 0
+		lData.Start = &initialStart
+	}
+	if lData.End == nil {
+		var initialEnd = 10
+		lData.End = &initialEnd
+	}
+
+	srcsrvManager := sourceserver.NewSrvManager(
+		sourceserver.SrvConfig{
+			CorrelationId:   c.GetRespHeader(fiber.HeaderXRequestID),
+			StoreMode:       api.Config.FileStore.Mode,
+			DiskStoreConfig: sourceserver.DiskStoreConfig(api.Config.FileStore.DiskConfig),
+		},
+		sourceserver.NewSrvRepository(api.DB),
+	)
+
+	filesList, total, err := srcsrvManager.GetListOfFileSnapshotsByFilenameAndSrvId(
+		params.SrvId,
+		params.Filename,
+		sourceserver.FindAllOption{
+			SortBy:    lData.SortBy,
+			SortOrder: lData.SortOrder,
+			Start:     *lData.Start,
+			End:       *lData.End,
+		},
+	)
+
+	if err != nil {
+		log.Default().Printf("error in getting files list of source server by id '%d' and filename '%s'. error: %s", params.SrvId, params.Filename, err.Error())
+		if errors.Is(err, xerrors.ErrNoStoreForSourceServer) || errors.Is(err, xerrors.ErrNoFileStoredOnSourceServerByThisName) {
 			return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
 				Data: map[string]interface{}{
 					"list":  filesList,
