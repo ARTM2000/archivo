@@ -19,7 +19,7 @@ export const FileSnapshotsShow = () => {
         <TextField source="id" label="ID" />
         <TextField source="name" label="Name" />
         <TextField source="size" label="Size" />
-        <TextField source="checksum" label="Checksum" />
+        <TextField source="checksum" label="Checksum (sha256)" />
         <DateField
           source="created_at"
           label="Created at"
