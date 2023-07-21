@@ -22,11 +22,7 @@ const MyDatagridRow = (props: {
   const history = useNavigate();
   return (
     <RecordContextProvider value={record}>
-      <TableRow
-        onClick={() => {
-          history(`${id}/files`);
-        }}
-      >
+      <TableRow>
         <TableCell padding="checkbox">
           {selectable && (
             <Checkbox
@@ -36,7 +32,14 @@ const MyDatagridRow = (props: {
           )}
         </TableCell>
         {React.Children.map(children, (field) => (
-          <TableCell key={`${id}-${field.props.source}`}>{field}</TableCell>
+          <TableCell
+            key={`${id}-${field.props.source}`}
+            onClick={() => {
+              history(`${id}/files`);
+            }}
+          >
+            {field}
+          </TableCell>
         ))}
       </TableRow>
     </RecordContextProvider>
