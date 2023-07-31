@@ -2,6 +2,7 @@ package archive
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 
@@ -139,17 +140,34 @@ func (api *API) loginUser(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnauthorized, "email or password in incorrect")
 	}
 
+	session, err := api.SessionStore.Get(c)
+	if err != nil {
+		log.Default().Printf("error in getting session from store, error: %+v \n", err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+	}
+
+	session.Set("tkn", fmt.Sprintf("Bearer %s", token))
+	err = session.Save()
+	if err != nil {
+		log.Default().Printf("error in saving session from store, error: %+v \n", err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+	}
+	log.Default().Println(session)
+
 	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
 		Message: "welcome",
-		Data: map[string]interface{}{
-			"access_token": token,
-		},
 	}))
 }
 
 func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
 	// todo: enable role base access control (RBAC)
-	authHeader := c.Get(fiber.HeaderAuthorization)
+	session, err := api.SessionStore.Get(c)
+	if err != nil {
+		log.Default().Printf("error in getting session from store, error: %+v \n", err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+	}
+	authHeader := session.Get("tkn").(string)
+
 	if !strings.HasPrefix(authHeader, "Bearer ") {
 		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
 	}
