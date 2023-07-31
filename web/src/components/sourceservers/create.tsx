@@ -9,7 +9,6 @@ import {
   useRedirect,
 } from 'react-admin';
 import { HttpAgent } from '../../utils/http-agent';
-import { TOKEN_KEY } from '../../auth-provider';
 import { ArchiveResponse } from '../../utils/types';
 import { AxiosError } from 'axios';
 
@@ -22,11 +21,7 @@ export const SourceServerCreate = () => {
   const handleSubmit = (data: any) => {
     HttpAgent.post<
       ArchiveResponse<{ id: number; name: string; api_key: string }>
-    >(`/servers/new`, data, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}`,
-      },
-    })
+    >(`/servers/new`, data)
       .then((res) => {
         notify('New Source Server Created', { type: 'success' });
         setApiKey(res.data.data.api_key);
