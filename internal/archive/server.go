@@ -11,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/fiber/v2/middleware/session"
 	"gorm.io/gorm"
 )
 
@@ -38,6 +39,10 @@ func runServer(c *Config) {
 			}))
 		},
 	}
+	sessionStore := session.New(session.Config{
+		Expiration: c.Auth.JWTExpireTime,
+	})
+
 	app := fiber.New(sConfig)
 
 	api := API{
@@ -50,7 +55,8 @@ func runServer(c *Config) {
 			DBZone:    c.Database.Zone,
 			DBSSLMode: c.Database.SSLMode,
 		}),
-		Config: c,
+		Config:       c,
+		SessionStore: sessionStore,
 	}
 
 	/**
@@ -74,8 +80,10 @@ func runServer(c *Config) {
 	}))
 	app.Use(helmet.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Request-ID",
+		AllowOrigins:     "http://localhost:5173,http://127.0.0.1:5173,",
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization, X-Request-ID",
+		ExposeHeaders:    "Content-Length,Content-Disposition,Content-Type",
+		AllowCredentials: true,
 	}))
 
 	app.Use(func(c *fiber.Ctx) error {
@@ -134,6 +142,7 @@ func runServer(c *Config) {
 
 // API handlers (controllers) register on this struct (class)
 type API struct {
-	DB     *gorm.DB
-	Config *Config
+	DB           *gorm.DB
+	Config       *Config
+	SessionStore *session.Store
 }
