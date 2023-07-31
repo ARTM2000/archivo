@@ -6,7 +6,6 @@ import {
 } from 'react-admin';
 import { HttpAgent } from './utils/http-agent';
 import { ArchiveResponse } from './utils/types';
-import { TOKEN_KEY } from './auth-provider';
 
 export const DataProvider: Partial<IDataProvider> = {
   getList: async (
@@ -29,9 +28,6 @@ export const DataProvider: Partial<IDataProvider> = {
     const response = await HttpAgent.get<
       ArchiveResponse<{ list: any[]; total: number }>
     >(url, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}`,
-      },
       params: {
         sort_by: field,
         sort_order: order,
@@ -51,11 +47,7 @@ export const DataProvider: Partial<IDataProvider> = {
   create: async (resource: string, params: CreateParams<any>) => {
     const response = await HttpAgent.post<
       ArchiveResponse<{ id: number; [key: string]: any }>
-    >(`/${resource}/new`, params.data, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}`,
-      },
-    });
+    >(`/${resource}/new`, params.data);
 
     const data = response.data.data;
     return {
