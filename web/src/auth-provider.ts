@@ -33,7 +33,7 @@ export const AuthProvider: IAuthProvider = {
       >('/auth/me');
     } catch (err) {
       console.log('check auth error: ', err);
-      throw {}
+      throw {};
     }
   },
   checkError: async (error) => {
@@ -44,8 +44,23 @@ export const AuthProvider: IAuthProvider = {
     return Promise.resolve();
   },
   logout: async () => {
-    // todo: call logout route
-    console.log('user logged out');
+    try {
+      await HttpAgent.post<
+        ArchiveResponse<{
+          user: {
+            id: number;
+            username: string;
+            email: string;
+            is_admin: boolean;
+            created_at: string;
+            updated_at: string;
+          };
+        }>
+      >('/auth/logout');
+    } catch (err) {
+      console.log('logout error: ', err);
+      throw {};
+    }
   },
   getIdentity: async () => {
     try {

@@ -14,6 +14,7 @@ import (
 
 const (
 	UserLocalName = "user"
+	SessionCredentialKey = "tkn"
 )
 
 type registerAdminDto struct {
@@ -146,7 +147,7 @@ func (api *API) loginUser(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
 	}
 
-	session.Set("tkn", fmt.Sprintf("Bearer %s", token))
+	session.Set(SessionCredentialKey, fmt.Sprintf("Bearer %s", token))
 	err = session.Save()
 	if err != nil {
 		log.Default().Printf("error in saving session from store, error: %+v \n", err.Error())
@@ -159,6 +160,22 @@ func (api *API) loginUser(c *fiber.Ctx) error {
 	}))
 }
 
+func (api *API) logoutUser(c *fiber.Ctx) error {
+	session, err := api.SessionStore.Get(c)
+	if err != nil {
+		log.Default().Printf("error in getting session from store, error: %+v \n", err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+	}
+
+	if session.Get(SessionCredentialKey) != nil {
+		session.Delete(SessionCredentialKey)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+		Message: "user logout was successful",
+	}))
+}
+
 func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
 	// todo: enable role base access control (RBAC)
 	session, err := api.SessionStore.Get(c)
@@ -166,9 +183,8 @@ func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
 		log.Default().Printf("error in getting session from store, error: %+v \n", err.Error())
 		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
 	}
-	tknData := session.Get("tkn")
+	tknData := session.Get(SessionCredentialKey)
 	if tknData == nil {
-		log.Default().Println("there >>", tknData)
 		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
 	}
 	authHeader := tknData.(string)

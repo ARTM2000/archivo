@@ -81,7 +81,7 @@ func runServer(c *Config) {
 	}))
 	app.Use(helmet.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:5173,http://127.0.0.1:5173,",
+		AllowOrigins:     "http://localhost:5173,http://127.0.0.1:5173",
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization, X-Request-ID",
 		ExposeHeaders:    "Content-Length,Content-Disposition,Content-Type",
 		AllowCredentials: true,
@@ -105,6 +105,7 @@ func runServer(c *Config) {
 			rt.Post("/admin/register", api.registerAdmin)
 			rt.Post("/user/register", api.registerUser)
 			rt.Post("/login", api.loginUser)
+			rt.Post("/logout", api.logoutUser)
 
 			// protected routes
 			rt.Use(api.authorizationMiddleware)
@@ -127,7 +128,7 @@ func runServer(c *Config) {
 	}, "APIv1")
 
 	app.Use(web.ServePath, web.ServeDashboard)
-	app.Use("/", func (c *fiber.Ctx) error {
+	app.Use("/", func(c *fiber.Ctx) error {
 		return c.Redirect(web.ServePath, fiber.StatusTemporaryRedirect)
 	})
 
