@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/ARTM2000/archive1/web"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
@@ -124,6 +125,11 @@ func runServer(c *Config) {
 			rtr.Get("/:srvId/files/:filename/:snapshot/download", api.downloadSnapshot)
 		})
 	}, "APIv1")
+
+	app.Use(web.ServePath, web.ServeDashboard)
+	app.Use("/", func (c *fiber.Ctx) error {
+		return c.Redirect(web.ServePath, fiber.StatusTemporaryRedirect)
+	})
 
 	port := 8010
 	host := ""

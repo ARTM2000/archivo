@@ -33,7 +33,7 @@ export const AuthProvider: IAuthProvider = {
       >('/auth/me');
     } catch (err) {
       console.log('check auth error: ', err);
-      throw err;
+      throw {}
     }
   },
   checkError: async (error) => {

@@ -361,7 +361,7 @@ func (ds *DiskStore) ReadSnapshot(srcSrvName, filename, snapshot string) (*[]byt
 	f, err := os.ReadFile(snapshotPath)
 	if err != nil {
 		log.Default().Printf(
-			"error in reading snapshot file for server '%s' filename '%s' snapshot '%s', error: %+v", 
+			"error in reading snapshot file for server '%s' filename '%s' snapshot '%s', error: %+v",
 			srcSrvName, filename, snapshot, err,
 		)
 		if os.IsNotExist(err) {
