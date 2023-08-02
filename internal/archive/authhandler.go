@@ -166,7 +166,12 @@ func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
 		log.Default().Printf("error in getting session from store, error: %+v \n", err.Error())
 		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
 	}
-	authHeader := session.Get("tkn").(string)
+	tknData := session.Get("tkn")
+	if tknData == nil {
+		log.Default().Println("there >>", tknData)
+		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
+	}
+	authHeader := tknData.(string)
 
 	if !strings.HasPrefix(authHeader, "Bearer ") {
 		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
