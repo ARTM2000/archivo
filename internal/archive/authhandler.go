@@ -220,6 +220,27 @@ func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
 	return c.Next()
 }
 
+func (api *API) adminAuthorizationMiddleware(c *fiber.Ctx) error {
+	user := c.Locals(UserLocalName).(*auth.User)
+
+	if user == nil {
+		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
+	}
+	userManager := auth.NewUserManager(
+		auth.UserConfig{
+			JWTSecret:     api.Config.Auth.JWTSecret,
+			JWTExpireTime: api.Config.Auth.JWTExpireTime,
+		},
+		auth.NewUserRepository(api.DB),
+	)
+
+	if isAdminPermitted := userManager.IsUserAdmin(user); !isAdminPermitted {
+		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
+	}
+
+	return c.Next()
+}
+
 func (api *API) getUserInfo(c *fiber.Ctx) error {
 	user := c.Locals(UserLocalName).(*auth.User)
 

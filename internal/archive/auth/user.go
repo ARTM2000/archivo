@@ -178,3 +178,7 @@ func (um *userManger) VerifyUserAccessToken(token string) (*User, error) {
 
 	return user, nil
 }
+
+func (um *userManger) IsUserAdmin(user *User) bool {
+	return user.IsAdmin
+}
