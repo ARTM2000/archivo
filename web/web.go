@@ -17,7 +17,7 @@ import (
 //go:embed dist/*
 var dashboardUI embed.FS
 
-const ServePath = "/panel/"
+const ServePath = "/panel"
 
 func getFS() fs.FS {
 	dist, err := fs.Sub(dashboardUI, "dist")
@@ -36,7 +36,7 @@ func ServeDashboard(c *fiber.Ctx) error {
 	uiFS := getFS()
 	path := c.Path()
 
-	if path == "/panel/" {
+	if path == ServePath || path == fmt.Sprintf("%s/", ServePath) {
 		path = "index.html"
 	}
 	path = strings.TrimPrefix(path, "/panel/")
