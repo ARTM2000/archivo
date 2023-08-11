@@ -177,7 +177,6 @@ func (api *API) logoutUser(c *fiber.Ctx) error {
 }
 
 func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
-	// todo: enable role base access control (RBAC)
 	session, err := api.SessionStore.Get(c)
 	if err != nil {
 		log.Default().Printf("error in getting session from store, error: %+v \n", err.Error())
@@ -247,6 +246,55 @@ func (api *API) getUserInfo(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
 		Data: map[string]interface{}{
 			"user": user,
+		},
+	}))
+}
+
+func (api *API) getAllUsersInformation(c *fiber.Ctx) error {
+	var data listData
+	if err := c.QueryParser(&data); err != nil {
+		log.Default().Println(err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	if errs, ok := validate.ValidateStruct[listData](&data); !ok {
+		log.Default().Println(errs[0].Message)
+		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
+	}
+
+	userManager := auth.NewUserManager(
+		auth.UserConfig{
+			JWTSecret:     api.Config.Auth.JWTSecret,
+			JWTExpireTime: api.Config.Auth.JWTExpireTime,
+		},
+		auth.NewUserRepository(api.DB),
+	)
+
+	if data.Start == nil {
+		var initialStart = 0
+		data.Start = &initialStart
+	}
+	if data.End == nil {
+		var initialEnd = 10
+		data.End = &initialEnd
+	}
+
+	users, totalUsers, err := userManager.GetAllUsers(auth.FindAllOption{
+		SortBy:    data.SortBy,
+		SortOrder: data.SortOrder,
+		Start:     *data.Start,
+		End:       *data.End,
+	})
+
+	if err != nil {
+		log.Default().Println("[Unhandled] error for finding all users", err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+		Data: map[string]interface{}{
+			"list":  users,
+			"total": totalUsers,
 		},
 	}))
 }

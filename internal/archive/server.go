@@ -125,6 +125,13 @@ func runServer(c *Config) {
 			rtr.Get("/:srvId/files/:filename", api.getListOfFileSnapshots)
 			rtr.Get("/:srvId/files/:filename/:snapshot/download", api.downloadSnapshot)
 		})
+
+		router.Route("/users", func(rtr fiber.Router) {
+			rtr.Use(api.authorizationMiddleware)
+			// admin only
+			rtr.Use(api.adminAuthorizationMiddleware)
+			rtr.Get("/", api.getAllUsersInformation)
+		})
 	}, "APIv1")
 
 	app.Use(web.ServePath, web.ServeDashboard)

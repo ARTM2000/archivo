@@ -7,6 +7,7 @@ import (
 
 	"github.com/ARTM2000/archive1/internal/archive/xerrors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type User struct {
@@ -28,6 +29,13 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 
 type UserRepository struct {
 	db *gorm.DB
+}
+
+type FindAllOption struct {
+	SortBy    string
+	SortOrder string
+	Start     int
+	End       int
 }
 
 func (repo *UserRepository) FindAdminUser() (*User, error) {
@@ -133,4 +141,23 @@ func (repo *UserRepository) FindUserWithId(id uint) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+func (repo *UserRepository) FindAllUsers(option FindAllOption) (*[]User, int64, error) {
+	var users []User
+	var DESC bool
+	if option.SortOrder == "ASC" {
+		DESC = false
+	} else {
+		DESC = true
+	}
+
+	dbResult := repo.db.Model(&User{}).Order(clause.OrderByColumn{Column: clause.Column{Name: option.SortBy}, Desc: DESC}).Offset(option.Start).Limit(option.End).Find(&users)
+
+	if dbResult.Error != nil {
+		log.Default().Println("[Unhandled] error in find users.", dbResult.Error.Error())
+		return nil, 0, xerrors.ErrUnhandled
+	}
+
+	return &users, dbResult.RowsAffected, nil
 }

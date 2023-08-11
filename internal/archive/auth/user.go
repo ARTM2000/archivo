@@ -182,3 +182,14 @@ func (um *userManger) VerifyUserAccessToken(token string) (*User, error) {
 func (um *userManger) IsUserAdmin(user *User) bool {
 	return user.IsAdmin
 }
+
+func (um *userManger) GetAllUsers(option FindAllOption) (*[]User, int64, error) {
+	usersList, totalUsers, err := um.userRepository.FindAllUsers(option)
+
+	if err != nil {
+		log.Default().Println("[Unhandled] error in finding all source servers", err.Error())
+		return nil, 0, xerrors.ErrUnhandled
+	}
+
+	return usersList, totalUsers, nil
+}
