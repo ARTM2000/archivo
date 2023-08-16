@@ -1,7 +1,12 @@
-import { Admin, Resource } from 'react-admin';
+import {
+  Admin,
+  Resource,
+  useGetPermissions,
+  usePermissions,
+} from 'react-admin';
 import './App.css';
 import { DataProvider } from './data-provider';
-import { AuthProvider } from './auth-provider';
+import { AuthProvider, PERMISSIONS } from './auth-provider';
 import { LoginWrapper } from './components/auth/login-wrapper';
 import { Dashboard } from './components/home/dashboard';
 import { SourceServerList } from './components/sourceservers/list';
@@ -10,8 +15,17 @@ import { SourceServerCreate } from './components/sourceservers/create';
 import { Route } from 'react-router-dom';
 import { FilesList } from './components/files/list';
 import { FileSnapshotsShow } from './components/files/show';
+import { useEffect, useState } from 'react';
+import { UserList } from './components/users/list';
 
 function App() {
+  const [perm, setPerm] = useState<PERMISSIONS>(PERMISSIONS.USER);
+  useEffect(() => {
+    AuthProvider.getPermissions('').then((perm: PERMISSIONS) => {
+      setPerm(perm);
+    });
+  }, []);
+
   return (
     <>
       <Admin
@@ -19,6 +33,7 @@ function App() {
         authProvider={AuthProvider}
         dashboard={Dashboard}
         loginPage={LoginWrapper}
+        darkTheme={{ palette: { mode: 'dark' } }}
         requireAuth
       >
         <Resource
@@ -34,6 +49,9 @@ function App() {
             element={<FileSnapshotsShow />}
           />
         </Resource>
+        {perm === PERMISSIONS.ADMIN && (
+          <Resource name="users" list={UserList} />
+        )}
       </Admin>
     </>
   );

@@ -2,6 +2,11 @@ import { AuthProvider as IAuthProvider } from 'ra-core';
 import { HttpAgent } from './utils/http-agent';
 import { ArchiveResponse } from './utils/types';
 
+export enum PERMISSIONS {
+  ADMIN = 'admin',
+  USER = 'user',
+}
+
 export const AuthProvider: IAuthProvider = {
   login: async (params: { email: string; password: string }) => {
     try {
@@ -86,5 +91,30 @@ export const AuthProvider: IAuthProvider = {
       throw err;
     }
   },
-  getPermissions: async () => {},
+  getPermissions: async () => {
+    try {
+      const res = await HttpAgent.get<
+        ArchiveResponse<{
+          user: {
+            id: number;
+            username: string;
+            email: string;
+            is_admin: boolean;
+            created_at: string;
+            updated_at: string;
+          };
+        }>
+      >('/auth/me');
+      console.log('user id', res.data.data.user.id);
+      if (res.data.data.user.is_admin) {
+        console.log('was admin');
+        return PERMISSIONS.ADMIN;
+      }
+      console.log('was user');
+      return PERMISSIONS.USER;
+    } catch (err) {
+      console.log('check auth error: ', err);
+      throw err;
+    }
+  },
 };

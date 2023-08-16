@@ -54,6 +54,7 @@ const MyDatagrid = (props: any) => (
     {...props}
     style={{ cursor: 'pointer' }}
     body={<MyDatagridBody />}
+    size='medium'
   />
 );
 
