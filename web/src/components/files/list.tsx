@@ -56,7 +56,7 @@ const MyDatagrid = (props: any) => (
     {...props}
     style={{ cursor: 'pointer' }}
     body={<MyDatagridBody />}
-    size='medium'
+    size="medium"
   />
 );
 
@@ -67,6 +67,7 @@ export const FilesList = () => {
     <List
       resource="files"
       queryOptions={{ meta: { serverId: params.serverId } }}
+      title={`Servers > ${params.serverName}`}
     >
       <MyDatagrid>
         <TextField source="id" label="ID" />

@@ -89,6 +89,7 @@ export const FileSnapshotsShow = () => {
           sort: { DefaultBy: 'name' },
         },
       }}
+      title={`Servers > ${params.serverName} > ${params.filename} (snapshots)`}
       exporter={false}
     >
       <MyDatagrid>

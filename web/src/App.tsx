@@ -1,9 +1,4 @@
-import {
-  Admin,
-  Resource,
-  useGetPermissions,
-  usePermissions,
-} from 'react-admin';
+import { Admin, Resource } from 'react-admin';
 import './App.css';
 import { DataProvider } from './data-provider';
 import { AuthProvider, PERMISSIONS } from './auth-provider';
@@ -11,6 +6,7 @@ import { LoginWrapper } from './components/auth/login-wrapper';
 import { Dashboard } from './components/home/dashboard';
 import { SourceServerList } from './components/sourceservers/list';
 import StorageSharpIcon from '@mui/icons-material/StorageSharp';
+import PeopleAltSharpIcon from '@mui/icons-material/PeopleAltSharp';
 import { SourceServerCreate } from './components/sourceservers/create';
 import { Route } from 'react-router-dom';
 import { FilesList } from './components/files/list';
@@ -33,7 +29,6 @@ function App() {
         authProvider={AuthProvider}
         dashboard={Dashboard}
         loginPage={LoginWrapper}
-        darkTheme={{ palette: { mode: 'dark' } }}
         requireAuth
       >
         <Resource
@@ -43,14 +38,14 @@ function App() {
           hasEdit={false}
           icon={StorageSharpIcon}
         >
-          <Route path=":serverId/files" element={<FilesList />} />
+          <Route path=":serverId/:serverName/files" element={<FilesList />} />
           <Route
-            path=":serverId/files/:filename"
+            path=":serverId/:serverName/files/:filename"
             element={<FileSnapshotsShow />}
           />
         </Resource>
         {perm === PERMISSIONS.ADMIN && (
-          <Resource name="users" list={UserList} />
+          <Resource name="users" list={UserList} icon={PeopleAltSharpIcon} />
         )}
       </Admin>
     </>

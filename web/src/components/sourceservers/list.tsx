@@ -35,7 +35,7 @@ const MyDatagridRow = (props: {
           <TableCell
             key={`${id}-${field.props.source}`}
             onClick={() => {
-              history(`${id}/files`);
+              history(`${id}/${record.name}/files`);
             }}
           >
             {field}
@@ -54,7 +54,7 @@ const MyDatagrid = (props: any) => (
     {...props}
     style={{ cursor: 'pointer' }}
     body={<MyDatagridBody />}
-    size='medium'
+    size="medium"
   />
 );
 
