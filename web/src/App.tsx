@@ -20,7 +20,7 @@ function App() {
     AuthProvider.getPermissions('').then((perm: PERMISSIONS) => {
       setPerm(perm);
     });
-  }, []);
+  });
 
   return (
     <>
