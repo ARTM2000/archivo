@@ -89,7 +89,6 @@ func (um *userManger) RegisterUser(email string, username string, password strin
 		return nil, xerrors.ErrUserExist
 	}
 
-	// in case that no admin user exists, create new one
 	passwordByte := []byte(password)
 	passwordHash, err := bcrypt.GenerateFromPassword(passwordByte, bcrypt.DefaultCost)
 	if err != nil {
@@ -145,6 +144,42 @@ func (um *userManger) LoginUser(email string, password string) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func (um *userManger) ChangeInitialPassword(email, initialPassword, newPassword string) error {
+	user, err := um.userRepository.FindUserWithEmail(email)
+	if err != nil {
+		log.Default().Println("error in finding user with email", err.Error())
+		if errors.Is(err, xerrors.ErrRecordNotFound) {
+			return xerrors.ErrEmailOrPasswordIsIncorrect
+		}
+		return xerrors.ErrUnhandled
+	}
+
+	if !user.ChangeInitialPassword {
+		return xerrors.ErrUserInitialPasswordHasBeenChanged
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(initialPassword))
+	if err != nil {
+		log.Default().Println("error in comparing password in change initial password", err.Error())
+		return xerrors.ErrUnauthorized
+	}
+
+	passwordByte := []byte(newPassword)
+	passwordHash, err := bcrypt.GenerateFromPassword(passwordByte, bcrypt.DefaultCost)
+	if err != nil {
+		log.Default().Println("password hashing problem.", err.Error())
+		return xerrors.ErrUnauthorized
+	}
+
+	_, err = um.userRepository.ChangeUserPassword(user.ID, string(passwordHash))
+	if err != nil {
+		log.Default().Println("error in changing user password in change initial password", err)
+		return xerrors.ErrUnhandled
+	}
+
+	return nil
 }
 
 func (um *userManger) VerifyUserAccessToken(token string) (*User, error) {
