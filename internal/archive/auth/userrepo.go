@@ -11,14 +11,15 @@ import (
 )
 
 type User struct {
-	ID             uint           `gorm:"primaryKey;unique" json:"id"`
-	Username       string         `gorm:"type:string;not null;unique" json:"username"`
-	Email          string         `gorm:"type:string;not null;unique" json:"email"`
-	HashedPassword string         `gorm:"type:string;not null" json:"-"`
-	IsAdmin        bool           `gorm:"type:bool;not null" json:"is_admin"`
-	CreatedAt      time.Time      `gorm:"autoUpdateTime:milli" json:"created_at"`
-	UpdatedAt      time.Time      `gorm:"autoUpdateTime:milli" json:"updated_at"`
-	DeletedAt      gorm.DeletedAt `json:"-"`
+	ID                    uint           `gorm:"primaryKey;unique" json:"id"`
+	Username              string         `gorm:"type:string;not null;unique" json:"username"`
+	Email                 string         `gorm:"type:string;not null;unique" json:"email"`
+	HashedPassword        string         `gorm:"type:string;not null" json:"-"`
+	IsAdmin               bool           `gorm:"type:bool;not null;default:false" json:"is_admin"`
+	ChangeInitialPassword bool           `gorm:"type:bool;not null;default:true" json:"change_initial_password"`
+	CreatedAt             time.Time      `gorm:"autoUpdateTime:milli" json:"created_at"`
+	UpdatedAt             time.Time      `gorm:"autoUpdateTime:milli" json:"updated_at"`
+	DeletedAt             gorm.DeletedAt `json:"-"`
 }
 
 func NewUserRepository(db *gorm.DB) UserRepository {
@@ -55,10 +56,11 @@ func (repo *UserRepository) FindAdminUser() (*User, error) {
 
 func (repo *UserRepository) CreateNewAdminUser(username string, email string, hashedPassword string) (*User, error) {
 	var newAdminUser = User{
-		Username:       username,
-		Email:          email,
-		HashedPassword: hashedPassword,
-		IsAdmin:        true,
+		Username:              username,
+		Email:                 email,
+		HashedPassword:        hashedPassword,
+		IsAdmin:               true,
+		ChangeInitialPassword: false,
 	}
 	dbResult := repo.db.Model(&User{}).Create(&newAdminUser)
 
@@ -80,6 +82,7 @@ func (repo *UserRepository) CreateNewNonAdminUser(username string, email string,
 		Email:          email,
 		HashedPassword: hashedPassword,
 		IsAdmin:        false,
+		ChangeInitialPassword: true,
 	}
 	dbResult := repo.db.Model(&User{}).Create(&newNonAdminUser)
 
@@ -160,4 +163,20 @@ func (repo *UserRepository) FindAllUsers(option FindAllOption) (*[]User, int64, 
 	}
 
 	return &users, dbResult.RowsAffected, nil
+}
+
+func (repo *UserRepository) ChangeUserPassword(id uint, newHashedPassword string) (*User, error) {
+	user, err := repo.FindUserWithId(id)
+	if err != nil {
+		return nil, err
+	}
+
+	user.HashedPassword = newHashedPassword
+	dbResult := repo.db.Save(user)
+	if dbResult.Error != nil {
+		log.Default().Printf("[Unhandled] error in changing user password, error: %+v", dbResult.Error)
+		return nil, xerrors.ErrUnhandled
+	}
+
+	return user, nil
 }
