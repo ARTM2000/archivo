@@ -1,14 +1,18 @@
 import { Checkbox, TableCell, TableRow } from '@mui/material';
 import React from 'react';
 import {
+  Button,
   Datagrid,
   DatagridBody,
   DateField,
+  ExportButton,
   List,
   RecordContextProvider,
   TextField,
+  TopToolbar,
 } from 'react-admin';
 import { useNavigate, useParams } from 'react-router-dom';
+import ArrowBackIosNewSharpIcon from '@mui/icons-material/ArrowBackIosNewSharp';
 
 const MyDatagridRow = (props: {
   record: { id: number; filename: string; snapshots: number; updated_at: Date };
@@ -60,6 +64,22 @@ const MyDatagrid = (props: any) => (
   />
 );
 
+const ActionsList = () => {
+  return (
+    <TopToolbar>
+      <Button
+        label="Back To Servers"
+        onClick={() => {
+          window.location = '/panel#/servers' as any;
+        }}
+      >
+        <ArrowBackIosNewSharpIcon />
+      </Button>
+      <ExportButton />
+    </TopToolbar>
+  );
+};
+
 export const FilesList = () => {
   const params = useParams();
 
@@ -68,6 +88,7 @@ export const FilesList = () => {
       resource="files"
       queryOptions={{ meta: { serverId: params.serverId } }}
       title={`Servers > ${params.serverName}`}
+      actions={<ActionsList />}
     >
       <MyDatagrid>
         <TextField source="id" label="ID" />

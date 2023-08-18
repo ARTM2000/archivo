@@ -1,16 +1,20 @@
 import { Checkbox, IconButton, TableCell, TableRow } from '@mui/material';
 import {
+  Button,
   Datagrid,
   DatagridBody,
   DateField,
+  ExportButton,
   List,
   RecordContextProvider,
   TextField,
+  TopToolbar,
   useNotify,
 } from 'react-admin';
 import { useParams } from 'react-router-dom';
 import DownloadIcon from '@mui/icons-material/Download';
 import React from 'react';
+import ArrowBackIosNewSharpIcon from '@mui/icons-material/ArrowBackIosNewSharp';
 
 const MyDatagridRow = (props: {
   record: {
@@ -76,6 +80,18 @@ const MyDatagrid = (props: any) => (
   <Datagrid {...props} body={<MyDatagridBody />} />
 );
 
+const ActionsList = (props: {serverId: string, serverName: string, filename: string}) => (
+  <TopToolbar>
+    <Button label='Back to Files'
+    onClick={() => {
+      window.location = `/panel#/servers/${props.serverId}/${props.serverName}/files` as any;
+    }}>
+    <ArrowBackIosNewSharpIcon />
+    </Button>
+    <ExportButton />
+  </TopToolbar>
+);
+
 export const FileSnapshotsShow = () => {
   const params = useParams();
 
@@ -90,7 +106,13 @@ export const FileSnapshotsShow = () => {
         },
       }}
       title={`Servers > ${params.serverName} > ${params.filename} (snapshots)`}
-      exporter={false}
+      actions={
+        <ActionsList
+          serverId={params.serverId as string}
+          serverName={params.serverName as string}
+          filename={params.filename as string}
+        />
+      }
     >
       <MyDatagrid>
         <TextField source="id" label="ID" />
