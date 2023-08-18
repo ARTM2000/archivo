@@ -13,10 +13,14 @@ import { FilesList } from './components/files/list';
 import { FileSnapshotsShow } from './components/files/show';
 import { useEffect, useState } from 'react';
 import { UserList } from './components/users/list';
+import { RegisterUser } from './components/users/register-user';
 
 function App() {
   const [perm, setPerm] = useState<PERMISSIONS>(PERMISSIONS.USER);
   useEffect(() => {
+    AuthProvider.getPermissions('').then((perm: PERMISSIONS) => {
+      setPerm(perm);
+    });
     const permissionCheckInterval = setInterval(
       () =>
         AuthProvider.getPermissions('').then((perm: PERMISSIONS) => {
@@ -50,7 +54,12 @@ function App() {
           />
         </Resource>
         {perm === PERMISSIONS.ADMIN && (
-          <Resource name="users" list={UserList} icon={PeopleAltSharpIcon} />
+          <Resource
+            name="users"
+            list={UserList}
+            create={RegisterUser}
+            icon={PeopleAltSharpIcon}
+          />
         )}
       </Admin>
     </>

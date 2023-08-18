@@ -160,9 +160,9 @@ func runServer(c *Config) {
 		}
 		scheme := "http"
 		if ld.TLS {
-		  scheme = "https"
+			scheme = "https"
 		}
-		log.Default().Printf("\n\nStart listening on '%s'\n\n", scheme + "://" + ld.Host + ":" + ld.Port)
+		log.Default().Printf("\n\nStart listening on '%s'\n\n", scheme+"://"+ld.Host+":"+ld.Port)
 		return nil
 	})
 

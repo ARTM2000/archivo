@@ -45,9 +45,15 @@ export const DataProvider: Partial<IDataProvider> = {
   },
 
   create: async (resource: string, params: CreateParams<any>) => {
+    let url = `/${resource}/new`;
+
+    if (resource === 'users') {
+      url = '/users/register';
+    }
+
     const response = await HttpAgent.post<
       ArchiveResponse<{ id: number; [key: string]: any }>
-    >(`/${resource}/new`, params.data);
+    >(url, params.data);
 
     const data = response.data.data;
     return {

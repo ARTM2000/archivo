@@ -1,14 +1,24 @@
 import {
   BooleanField,
+  CreateButton,
   Datagrid,
   DateField,
+  ExportButton,
   List,
   TextField,
+  TopToolbar,
 } from 'react-admin';
+
+const ActionsList = () => (
+  <TopToolbar>
+    <CreateButton label="Register New User" />
+    <ExportButton />
+  </TopToolbar>
+);
 
 export const UserList = () => {
   return (
-    <List resource="users">
+    <List resource="users" actions={<ActionsList />}>
       <Datagrid size="medium">
         <TextField source="id" label="ID" />
         <TextField source="username" label="Username" />

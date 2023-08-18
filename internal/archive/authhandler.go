@@ -26,7 +26,7 @@ type registerAdminDto struct {
 type registerUserDto struct {
 	Email    string `json:"email" validate:"required,email"`
 	Username string `json:"username" validate:"required,alphanum"`
-	Password string `json:"password" validate:"required,alphanum"` // as this password acts as initial password, we will keep it simple
+	Password string `json:"password" validate:"required,alphanum,min=8"` // as this password acts as initial password, we will keep it simple
 }
 
 type loginUserDto struct {
@@ -144,6 +144,7 @@ func (api *API) registerUser(c *fiber.Ctx) error {
 		Message: "new user registered",
 		Data: map[string]interface{}{
 			"user": newUser,
+			"id":   newUser.ID,
 		},
 	}))
 }

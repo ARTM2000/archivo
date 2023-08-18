@@ -78,10 +78,10 @@ func (repo *UserRepository) CreateNewAdminUser(username string, email string, ha
 
 func (repo *UserRepository) CreateNewNonAdminUser(username string, email string, hashedPassword string) (*User, error) {
 	var newNonAdminUser = User{
-		Username:       username,
-		Email:          email,
-		HashedPassword: hashedPassword,
-		IsAdmin:        false,
+		Username:              username,
+		Email:                 email,
+		HashedPassword:        hashedPassword,
+		IsAdmin:               false,
 		ChangeInitialPassword: true,
 	}
 	dbResult := repo.db.Model(&User{}).Create(&newNonAdminUser)
