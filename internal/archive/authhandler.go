@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	UserLocalName = "user"
+	UserLocalName        = "user"
 	SessionCredentialKey = "tkn"
 )
 
@@ -26,12 +26,17 @@ type registerAdminDto struct {
 type registerUserDto struct {
 	Email    string `json:"email" validate:"required,email"`
 	Username string `json:"username" validate:"required,alphanum"`
-	Password string `json:"password" validate:"required,password"`
+	Password string `json:"password" validate:"required,alphanum"` // as this password acts as initial password, we will keep it simple
 }
 
 type loginUserDto struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
+}
+
+type changeInitialPassword struct {
+	InitialPassword string `json:"initial_password" validate:"required"`
+	NewPassword     string `json:"new_password" validate:"required,password"`
 }
 
 func (api *API) checkAdminExistence(c *fiber.Ctx) error {
@@ -82,6 +87,32 @@ func (api *API) registerAdmin(c *fiber.Ctx) error {
 			"admin": newAdmin,
 		},
 		Message: "new admin user created",
+	}))
+}
+
+func (api *API) changeUserInitialPassword(c *fiber.Ctx) error {
+	changeInitPass := changeInitialPassword{}
+	if err := c.BodyParser(&changeInitPass); err != nil {
+		log.Default().Println(err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	if errs, ok := validate.ValidateStruct[changeInitialPassword](&changeInitPass); !ok {
+		log.Default().Println(errs[0].Message)
+		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
+	}
+
+	userManger := auth.NewUserManager(auth.UserConfig{}, auth.NewUserRepository(api.DB))
+
+	user := c.Locals(UserLocalName).(*auth.User)
+
+	err := userManger.ChangeInitialPassword(user.Email, changeInitPass.InitialPassword, changeInitPass.NewPassword)
+	if err != nil {
+		return fiber.NewError(fiber.StatusUnauthorized, xerrors.ErrUnauthorized.Error())
+	}
+
+	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+		Message: "initial password changed",
 	}))
 }
 
@@ -168,7 +199,8 @@ func (api *API) logoutUser(c *fiber.Ctx) error {
 	}
 
 	if session.Get(SessionCredentialKey) != nil {
-		session.Delete(SessionCredentialKey)
+		log.Default().Println("delete session")
+		session.Destroy()
 	}
 
 	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
@@ -176,25 +208,25 @@ func (api *API) logoutUser(c *fiber.Ctx) error {
 	}))
 }
 
-func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
+func (api *API) _commonAuthorization(c *fiber.Ctx) (*auth.User, error) {
 	session, err := api.SessionStore.Get(c)
 	if err != nil {
 		log.Default().Printf("error in getting session from store, error: %+v \n", err.Error())
-		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+		return nil, fiber.NewError(fiber.StatusInternalServerError, "internal server error")
 	}
 	tknData := session.Get(SessionCredentialKey)
 	if tknData == nil {
-		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
+		return nil, fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
 	}
 	authHeader := tknData.(string)
 
 	if !strings.HasPrefix(authHeader, "Bearer ") {
-		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
+		return nil, fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
 	}
 
 	tokenStr := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
 	if tokenStr == "" {
-		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
+		return nil, fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
 	}
 
 	userManager := auth.NewUserManager(
@@ -208,9 +240,36 @@ func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
 	user, err := userManager.VerifyUserAccessToken(tokenStr)
 	if err != nil {
 		if errors.Is(err, xerrors.ErrUnauthorized) {
-			return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
+			return nil, fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
 		}
 		log.Default().Println("[Unhandled] error in verifying token", err.Error())
+		return nil, fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
+	}
+
+	return user, nil
+}
+
+func (api *API) preDashboardAuthorizationMiddleware(c *fiber.Ctx) error {
+	user, err := api._commonAuthorization(c)
+	if err != nil {
+		return err
+	}
+
+	c.Locals(UserLocalName, user)
+	log.Default().Printf("request authorized for pre dashboard actions. user: %+v \n", user)
+	return c.Next()
+}
+
+func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
+	user, err := api._commonAuthorization(c)
+	if err != nil {
+		return err
+	}
+
+	if user.ChangeInitialPassword {
+		// if user initial password did not changed, user is not authorized to
+		// use dashboard and will force to change him/her password
+		log.Default().Println("user should change him/her initial password to be authorized!")
 		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
 	}
 

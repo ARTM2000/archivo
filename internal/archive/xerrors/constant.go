@@ -19,4 +19,5 @@ var (
 	ErrNoStoreForSourceServer                = errors.New("no store exists for source server")
 	ErrNoFileStoredOnSourceServerByThisName  = errors.New("no file stores on source server by this filename")
 	ErrSnapshotNotFound                      = errors.New("unable to locate this snapshot")
+	ErrUserInitialPasswordHasBeenChanged     = errors.New("user initial password has been changed")
 )
