@@ -22,6 +22,7 @@ func runServer(c *Config) {
 		ServerHeader:                 "none",
 		AppName:                      "Archive1",
 		DisablePreParseMultipartForm: true,
+		DisableStartupMessage:        true,
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			code := fiber.StatusInternalServerError
 
@@ -99,11 +100,15 @@ func runServer(c *Config) {
 	})
 
 	app.Route("/api/v1", func(router fiber.Router) {
+		router.Route("/pre-auth", func(rt fiber.Router) {
+			rt.Use(api.preDashboardAuthorizationMiddleware)
+			rt.Post("/change-user-initial-pass", api.changeUserInitialPassword)
+		})
+
 		router.Route("/auth", func(rt fiber.Router) {
 			// non protected route
 			rt.Get("/admin/existence", api.checkAdminExistence)
 			rt.Post("/admin/register", api.registerAdmin)
-			rt.Post("/user/register", api.registerUser)
 			rt.Post("/login", api.loginUser)
 			rt.Post("/logout", api.logoutUser)
 
@@ -131,6 +136,7 @@ func runServer(c *Config) {
 			// admin only
 			rtr.Use(api.adminAuthorizationMiddleware)
 			rtr.Get("/", api.getAllUsersInformation)
+			rtr.Post("/register", api.registerUser)
 		})
 	}, "APIv1")
 
@@ -147,6 +153,18 @@ func runServer(c *Config) {
 	if c.ServerHost != nil {
 		host = *c.ServerHost
 	}
+
+	app.Hooks().OnListen(func(ld fiber.ListenData) error {
+		if fiber.IsChild() {
+			return nil
+		}
+		scheme := "http"
+		if ld.TLS {
+		  scheme = "https"
+		}
+		log.Default().Printf("\n\nStart listening on '%s'\n\n", scheme + "://" + ld.Host + ":" + ld.Port)
+		return nil
+	})
 
 	err := app.Listen(fmt.Sprintf("%s:%d", host, port))
 	if err != nil {
