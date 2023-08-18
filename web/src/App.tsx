@@ -17,10 +17,15 @@ import { UserList } from './components/users/list';
 function App() {
   const [perm, setPerm] = useState<PERMISSIONS>(PERMISSIONS.USER);
   useEffect(() => {
-    AuthProvider.getPermissions('').then((perm: PERMISSIONS) => {
-      setPerm(perm);
-    });
-  });
+    const permissionCheckInterval = setInterval(
+      () =>
+        AuthProvider.getPermissions('').then((perm: PERMISSIONS) => {
+          setPerm(perm);
+        }),
+      3000,
+    );
+    return () => clearInterval(permissionCheckInterval);
+  }, []);
 
   return (
     <>
