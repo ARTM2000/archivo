@@ -37,6 +37,19 @@ export const UserList = () => {
             day: 'numeric',
           }}
         />
+        <DateField
+          source="last_login_at"
+          label="Last Login"
+          options={{
+            hour: '2-digit',
+            minute: '2-digit',
+            second: 'numeric',
+            weekday: 'short',
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+          }}
+        />
       </Datagrid>
     </List>
   );

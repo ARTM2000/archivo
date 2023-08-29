@@ -17,6 +17,7 @@ type User struct {
 	HashedPassword        string         `gorm:"type:string;not null" json:"-"`
 	IsAdmin               bool           `gorm:"type:bool;not null;default:false" json:"is_admin"`
 	ChangeInitialPassword bool           `gorm:"type:bool;not null;default:true" json:"change_initial_password"`
+	LastLoginAt           time.Time      `gorm:"type:time;" json:"last_login_at"`
 	CreatedAt             time.Time      `gorm:"autoUpdateTime:milli" json:"created_at"`
 	UpdatedAt             time.Time      `gorm:"autoUpdateTime:milli" json:"updated_at"`
 	DeletedAt             gorm.DeletedAt `json:"-"`
@@ -180,4 +181,20 @@ func (repo *UserRepository) ChangeUserPassword(id uint, newHashedPassword string
 	}
 
 	return user, nil
+}
+
+func (repo *UserRepository) UpdateLastLoginTime(id uint) error {
+	user, err := repo.FindUserWithId(id)
+	if err != nil {
+		return err
+	}
+
+	user.LastLoginAt = time.Now()
+	dbResult := repo.db.Save(user)
+	if dbResult.Error != nil {
+		log.Default().Printf("[Unhandled] error in changing user password, error: %+v", dbResult.Error)
+		return xerrors.ErrUnhandled
+	}
+
+	return nil
 }

@@ -143,6 +143,12 @@ func (um *userManger) LoginUser(email string, password string) (string, error) {
 		return "", xerrors.ErrUnhandled
 	}
 
+	um.userRepository.UpdateLastLoginTime(user.ID)
+	if err != nil {
+		fmt.Println("error in updating last login time", err.Error())
+		return "", xerrors.ErrUnhandled
+	}
+
 	return tokenString, nil
 }
 
