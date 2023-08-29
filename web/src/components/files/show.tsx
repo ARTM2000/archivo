@@ -9,12 +9,12 @@ import {
   RecordContextProvider,
   TextField,
   TopToolbar,
-  useNotify,
 } from 'react-admin';
 import { useParams } from 'react-router-dom';
 import DownloadIcon from '@mui/icons-material/Download';
 import React from 'react';
 import ArrowBackIosNewSharpIcon from '@mui/icons-material/ArrowBackIosNewSharp';
+import { toast } from 'react-toastify';
 
 const MyDatagridRow = (props: {
   record: {
@@ -33,14 +33,13 @@ const MyDatagridRow = (props: {
   const { record, id, onToggleItem, children, selected, selectable } = props;
   // const history = useNavigate();
   const params = useParams();
-  const notify = useNotify();
 
   const downloadSnapshot = () => {
     const url = `${import.meta.env.VITE_ARCHIVE1_API_PANEL_BASE_URL}/servers/${
       params.serverId
     }/files/${params.filename}/${record.name}/download`;
     window.location.href = url;
-    notify('Download started', { type: 'success' });
+    toast('Download started', { type: 'success', position: toast.POSITION.BOTTOM_CENTER });
   };
 
   return (

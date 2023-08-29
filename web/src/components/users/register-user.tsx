@@ -5,16 +5,15 @@ import {
   SimpleForm,
   TextInput,
   required,
-  useNotify,
 } from 'react-admin';
 import { ArchiveResponse } from '../../utils/types';
+import { toast } from 'react-toastify';
 
 export const RegisterUser = () => {
-  const notify = useNotify();
   const onError = (err: Error, _: any, __: any) => {
     const error = err as AxiosError<any, ArchiveResponse>;
     const message = error.response?.data.message;
-    notify(message, { type: 'error' });
+    toast(message, { type: 'error', position: toast.POSITION.BOTTOM_CENTER });
   };
 
   return (

@@ -113,7 +113,7 @@ func runServer(c *Config) {
 			rt.Post("/logout", api.logoutUser)
 
 			// protected routes
-			rt.Use(api.authorizationMiddleware)
+			rt.Use(api.preDashboardAuthorizationMiddleware)
 			rt.Get("/me", api.getUserInfo)
 		})
 

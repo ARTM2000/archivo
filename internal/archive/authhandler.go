@@ -111,6 +111,17 @@ func (api *API) changeUserInitialPassword(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnauthorized, xerrors.ErrUnauthorized.Error())
 	}
 
+	session, err := api.SessionStore.Get(c)
+	if err != nil {
+		log.Default().Printf("error in getting session from store, error: %+v \n", err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+	}
+
+	if session.Get(SessionCredentialKey) != nil {
+		log.Default().Println("delete session")
+		session.Destroy()
+	}
+
 	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
 		Message: "initial password changed",
 	}))

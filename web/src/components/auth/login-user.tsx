@@ -8,15 +8,15 @@ import {
 } from '@mui/material';
 import { Logo } from '../branding/logo';
 import React, { useState } from 'react';
-import { useLogin, useNotify } from 'react-admin';
+import { useLogin } from 'react-admin';
 import { AxiosError } from 'axios';
 import { ArchiveResponse } from '../../utils/types';
+import { toast } from 'react-toastify';
 
 export const LoginUser = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const notify = useNotify();
   const login = useLogin();
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -24,14 +24,23 @@ export const LoginUser = () => {
     setLoading(true);
     login({ email, password })
       .then(() => {
-        notify('Welcome!', { type: 'success', autoHideDuration: 3000 });
+        toast('Welcome!', {
+          type: 'success',
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
       })
       .catch((err: AxiosError<ArchiveResponse>) => {
         if (err.response?.status !== 500) {
-          notify(err.response?.data.message, { type: 'error' });
+          toast(err.response?.data.message, {
+            type: 'error',
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
           return;
         }
-        notify('Something went wrong :(', { type: 'error' });
+        toast('Something went wrong :(', {
+          type: 'error',
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
       })
       .finally(() => {
         setLoading(false);

@@ -3,13 +3,12 @@ import { AxiosResponse } from 'axios';
 import { RegisterAdmin } from './register-admin';
 import { Typography } from '@mui/material';
 import { HttpAgent } from '../../utils/http-agent';
-import { useNotify } from 'react-admin';
 import { LoginUser } from './login-user';
+import { toast } from 'react-toastify';
 
 export const LoginWrapper = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [adminExist, setAdminExist] = useState<boolean>(false);
-  const notify = useNotify();
 
   useEffect(() => {
     HttpAgent.get('/auth/admin/existence')
@@ -27,7 +26,7 @@ export const LoginWrapper = () => {
         },
       )
       .catch((err) => {
-        notify('Something went wrong :(', { type: 'error' });
+        toast('Something went wrong :(', { type: 'error', position: toast.POSITION.BOTTOM_CENTER });
         setLoading(false);
         console.log(err);
       });

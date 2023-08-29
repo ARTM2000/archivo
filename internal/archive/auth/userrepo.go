@@ -172,6 +172,7 @@ func (repo *UserRepository) ChangeUserPassword(id uint, newHashedPassword string
 	}
 
 	user.HashedPassword = newHashedPassword
+	user.ChangeInitialPassword = false
 	dbResult := repo.db.Save(user)
 	if dbResult.Error != nil {
 		log.Default().Printf("[Unhandled] error in changing user password, error: %+v", dbResult.Error)

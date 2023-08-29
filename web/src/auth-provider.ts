@@ -1,6 +1,7 @@
 import { AuthProvider as IAuthProvider } from 'ra-core';
 import { HttpAgent } from './utils/http-agent';
 import { ArchiveResponse } from './utils/types';
+import { toast } from 'react-toastify';
 
 export enum PERMISSIONS {
   ADMIN = 'admin',
@@ -17,6 +18,27 @@ export const AuthProvider: IAuthProvider = {
           password: params.password,
         },
       );
+
+      // check that user should redirect to pre-auth change password or not
+      const res = await HttpAgent.get<
+        ArchiveResponse<{
+          user: {
+            id: number;
+            username: string;
+            email: string;
+            is_admin: boolean;
+            change_initial_password: boolean;
+            created_at: string;
+            updated_at: string;
+          };
+        }>
+      >('/auth/me');
+
+      if (res.data.data.user.change_initial_password) {
+        console.log('here in redirect');
+        window.location = '/panel/pre-auth/change-password' as any;
+        return {};
+      }
     } catch (err) {
       console.log('login error', err);
       throw err;
@@ -24,18 +46,27 @@ export const AuthProvider: IAuthProvider = {
   },
   checkAuth: async (_) => {
     try {
-      await HttpAgent.get<
+      const res = await HttpAgent.get<
         ArchiveResponse<{
           user: {
             id: number;
             username: string;
             email: string;
             is_admin: boolean;
+            change_initial_password: boolean;
             created_at: string;
             updated_at: string;
           };
         }>
       >('/auth/me');
+
+      if (res.data.data.user.change_initial_password) {
+        toast('please change your initial password', {
+          type: 'error',
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+        throw new Error('user should change initial password');
+      }
     } catch (err) {
       console.log('check auth error: ', err);
       throw {};

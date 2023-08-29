@@ -9,16 +9,15 @@ import {
 } from '@mui/material';
 import { Logo } from '../branding/logo';
 import { HttpAgent } from '../../utils/http-agent';
-import { useNotify } from 'react-admin';
 import { AxiosError } from 'axios';
 import { ArchiveResponse } from '../../utils/types';
+import { toast } from 'react-toastify';
 
 export const RegisterAdmin = () => {
   const [username, setUsername] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const notify = useNotify();
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +29,7 @@ export const RegisterAdmin = () => {
       username,
     })
       .then(() => {
-        notify('Admin registered', { type: 'success' });
+        toast('Admin registered', { type: 'success', position: toast.POSITION.BOTTOM_CENTER });
         setTimeout(() => {
           window.location.reload();
         }, 1000);
@@ -38,10 +37,10 @@ export const RegisterAdmin = () => {
       .catch((err: AxiosError<ArchiveResponse<any>>) => {
         setLoading(false);
         if (err.response?.status !== 500) {
-          notify(err.response?.data.message, { type: 'error' });
+          toast(err.response?.data.message, { type: 'error', position: toast.POSITION.BOTTOM_CENTER });
           return;
         }
-        notify('Something went wrong :(', { type: 'error' });
+        toast('Something went wrong :(', { type: 'error', position: toast.POSITION.BOTTOM_CENTER });
         console.log(err);
       });
   };
