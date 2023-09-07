@@ -21,6 +21,7 @@ type User struct {
 	CreatedAt             time.Time      `gorm:"autoUpdateTime:milli" json:"created_at"`
 	UpdatedAt             time.Time      `gorm:"autoUpdateTime:milli" json:"updated_at"`
 	DeletedAt             gorm.DeletedAt `json:"-"`
+	Activities            []UserActivity
 }
 
 func NewUserRepository(db *gorm.DB) UserRepository {

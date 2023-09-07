@@ -39,7 +39,10 @@ const MyDatagridRow = (props: {
       params.serverId
     }/files/${params.filename}/${record.name}/download`;
     window.location.href = url;
-    toast('Download started', { type: 'success', position: toast.POSITION.BOTTOM_CENTER });
+    toast('Download started', {
+      type: 'success',
+      position: toast.POSITION.BOTTOM_CENTER,
+    });
   };
 
   return (
@@ -79,13 +82,20 @@ const MyDatagrid = (props: any) => (
   <Datagrid {...props} body={<MyDatagridBody />} />
 );
 
-const ActionsList = (props: {serverId: string, serverName: string, filename: string}) => (
+const ActionsList = (props: {
+  serverId: string;
+  serverName: string;
+  filename: string;
+}) => (
   <TopToolbar>
-    <Button label='Back to Files'
-    onClick={() => {
-      window.location = `/panel#/servers/${props.serverId}/${props.serverName}/files` as any;
-    }}>
-    <ArrowBackIosNewSharpIcon />
+    <Button
+      label="Back to Files"
+      onClick={() => {
+        window.location =
+          `/panel/servers/${props.serverId}/${props.serverName}/files` as any;
+      }}
+    >
+      <ArrowBackIosNewSharpIcon />
     </Button>
     <ExportButton />
   </TopToolbar>

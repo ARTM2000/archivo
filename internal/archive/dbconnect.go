@@ -49,6 +49,7 @@ func NewDBConnection(dbc DBConfig) *gorm.DB {
 	// todo: make its safety more
 	db.AutoMigrate(
 		auth.User{},
+		auth.UserActivity{},
 		sourceserver.SourceServer{},
 	)
 

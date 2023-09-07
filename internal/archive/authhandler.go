@@ -285,6 +285,17 @@ func (api *API) authorizationMiddleware(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized request")
 	}
 
+	userActivityManager := auth.NewUserActivityManager(
+		auth.NewUserActivityRepository(
+			api.DB,
+		),
+	)
+	err = userActivityManager.SaveNewActivity(user.ID, string(c.Request().Header.Method()), string(c.Request().RequestURI()))
+	if err != nil {
+		log.Default().Println("got error in user activity log >", err)
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
 	c.Locals(UserLocalName, user)
 	log.Default().Printf("request authorized. user: %+v \n", user)
 	return c.Next()

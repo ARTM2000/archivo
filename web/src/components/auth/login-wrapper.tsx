@@ -26,7 +26,10 @@ export const LoginWrapper = () => {
         },
       )
       .catch((err) => {
-        toast('Something went wrong :(', { type: 'error', position: toast.POSITION.BOTTOM_CENTER });
+        toast('Something went wrong :(', {
+          type: 'error',
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
         setLoading(false);
         console.log(err);
       });

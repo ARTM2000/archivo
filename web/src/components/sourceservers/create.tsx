@@ -22,16 +22,25 @@ export const SourceServerCreate = () => {
       ArchiveResponse<{ id: number; name: string; api_key: string }>
     >(`/servers/new`, data)
       .then((res) => {
-        toast('New Source Server Created', { type: 'success', position: toast.POSITION.BOTTOM_CENTER });
+        toast('New Source Server Created', {
+          type: 'success',
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
         setApiKey(res.data.data.api_key);
         setOpen(true);
       })
       .catch((err: AxiosError<ArchiveResponse>) => {
         if (err.response?.status !== 500) {
-          toast(err.response?.data.message, { type: 'error', position: toast.POSITION.BOTTOM_CENTER });
+          toast(err.response?.data.message, {
+            type: 'error',
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
           return;
         }
-        toast('Internal Server Error', { type: 'error', position: toast.POSITION.BOTTOM_CENTER });
+        toast('Internal Server Error', {
+          type: 'error',
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
       });
   };
 

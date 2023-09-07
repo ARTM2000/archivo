@@ -29,7 +29,10 @@ export const RegisterAdmin = () => {
       username,
     })
       .then(() => {
-        toast('Admin registered', { type: 'success', position: toast.POSITION.BOTTOM_CENTER });
+        toast('Admin registered', {
+          type: 'success',
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
         setTimeout(() => {
           window.location.reload();
         }, 1000);
@@ -37,10 +40,16 @@ export const RegisterAdmin = () => {
       .catch((err: AxiosError<ArchiveResponse<any>>) => {
         setLoading(false);
         if (err.response?.status !== 500) {
-          toast(err.response?.data.message, { type: 'error', position: toast.POSITION.BOTTOM_CENTER });
+          toast(err.response?.data.message, {
+            type: 'error',
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
           return;
         }
-        toast('Something went wrong :(', { type: 'error', position: toast.POSITION.BOTTOM_CENTER });
+        toast('Something went wrong :(', {
+          type: 'error',
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
         console.log(err);
       });
   };

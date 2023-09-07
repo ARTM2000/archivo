@@ -70,7 +70,7 @@ const ActionsList = () => {
       <Button
         label="Back To Servers"
         onClick={() => {
-          window.location = '/panel#/servers' as any;
+          window.location = '/panel/servers' as any;
         }}
       >
         <ArrowBackIosNewSharpIcon />
