@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { Datagrid, DateField, List, TextField } from 'react-admin';
 import { useParams } from 'react-router-dom';
 

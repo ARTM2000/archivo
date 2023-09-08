@@ -73,7 +73,7 @@ export const AdminPanel = () => {
   );
 };
 
-const CustomAdminPanelNotification = (...props: any[]) => {
+const CustomAdminPanelNotification = () => {
   const { notifications, takeNotification } = useNotificationContext();
   const [messageInfo, setMessageInfo] = useState<any>(null);
   const [open, setOpen] = useState(false);
@@ -111,6 +111,7 @@ const CustomAdminPanelNotification = (...props: any[]) => {
           messageArgs,
           multiLine: multilineFromMessage,
           undoable,
+          // @ts-ignore
           ...options
         },
       } = messageInfo;
