@@ -164,7 +164,14 @@ func (repo *UserRepository) FindAllUsers(option FindAllOption) (*[]User, int64, 
 		return nil, 0, xerrors.ErrUnhandled
 	}
 
-	return &users, dbResult.RowsAffected, nil
+	var total int64
+	dbResult = repo.db.Model(&User{}).Count(&total)
+	if dbResult.Error != nil {
+		log.Default().Println("[Unhandled] error in count users.", dbResult.Error.Error())
+		return nil, 0, xerrors.ErrUnhandled
+	}
+
+	return &users, total, nil
 }
 
 func (repo *UserRepository) ChangeUserPassword(id uint, newHashedPassword string) (*User, error) {

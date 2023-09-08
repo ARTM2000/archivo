@@ -6,11 +6,12 @@ import (
 
 	"github.com/ARTM2000/archive1/internal/archive/xerrors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UserActivity struct {
-	ID        uint `gorm:"primaryKey;unique" json:"id"`
-	UserID    uint
+	ID        uint      `gorm:"primaryKey;unique" json:"id"`
+	UserID    uint      `json:"user_id"`
 	Act       string    `gorm:"type:string;not null" json:"act"`
 	CreatedAt time.Time `gorm:"autoUpdateTime:milli" json:"created_at"`
 }
@@ -38,4 +39,27 @@ func (uar *UserActivityRepository) SubmitNew(userId uint, act string) error {
 	}
 
 	return nil
+}
+
+func (uar *UserActivityRepository) SingleUserActivity(userId uint, option FindAllOption) (*[]UserActivity, int64, error) {
+	var userActivities []UserActivity
+	var DESC bool
+	if option.SortOrder == "ASC" {
+		DESC = false
+	} else {
+		DESC = true
+	}
+
+	dbResult := uar.db.Model(&UserActivity{}).Where(&UserActivity{UserID: userId}).Order(clause.OrderByColumn{Column: clause.Column{Name: option.SortBy}, Desc: DESC}).Offset(option.Start).Limit(option.End).Find(&userActivities)
+	if dbResult.Error != nil {
+		log.Default().Println("[Unhandled] error in finding user activity", dbResult.Error)
+		return nil, 0, xerrors.ErrUnhandled
+	}
+	var total int64
+	dbResult = uar.db.Model(&UserActivity{}).Where(&UserActivity{UserID: userId}).Order(clause.OrderByColumn{Column: clause.Column{Name: option.SortBy}, Desc: DESC}).Count(&total)
+	if dbResult.Error != nil {
+		log.Default().Println("[Unhandled] error in counting user activity", dbResult.Error)
+		return nil, 0, xerrors.ErrUnhandled
+	}
+	return &userActivities, total, nil
 }
