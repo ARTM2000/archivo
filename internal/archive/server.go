@@ -139,6 +139,11 @@ func runServer(c *Config) {
 			rtr.Get("/", api.getAllUsersInformation)
 			rtr.Post("/register", api.registerUser)
 		})
+
+		router.Route("/dashboard", func(rtr fiber.Router) {
+			rtr.Use(api.authorizationMiddleware)
+			rtr.Get("/common-metrics", api.storeCommonStatistics)
+		})
 	}, "APIv1")
 
 	app.Use(web.ServePath, web.ServeDashboard)

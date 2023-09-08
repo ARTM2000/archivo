@@ -280,19 +280,6 @@ func (ds *DiskStore) FilesList(srcSrvName string) ([]FileList, error) {
 	return filesList, nil
 }
 
-func (ds *DiskStore) ByteCountDecimal(b int64) string {
-	const unit = 1000
-	if b < unit {
-		return fmt.Sprintf("%d B", b)
-	}
-	div, exp := int64(unit), 0
-	for n := b / unit; n >= unit; n /= unit {
-		div *= unit
-		exp++
-	}
-	return fmt.Sprintf("%.1f %cB", float64(b)/float64(div), "KMGTPE"[exp])
-}
-
 func (ds *DiskStore) SnapshotsList(srcSrvName, filename string) ([]SnapshotList, error) {
 
 	// check that is there any directory for requested source server or not
@@ -346,7 +333,8 @@ func (ds *DiskStore) SnapshotsList(srcSrvName, filename string) ([]SnapshotList,
 		snp := SnapshotList{
 			ID:        uint32(i + 1),
 			Name:      snpName,
-			Size:      ds.ByteCountDecimal(snpInfo.Size()),
+			Size:      ByteCountDecimal(snpInfo.Size()),
+			ByteSize:  snpInfo.Size(),
 			Checksum:  fmt.Sprintf("%x", hash.Sum(nil)),
 			CreatedAt: snpInfo.ModTime(),
 		}

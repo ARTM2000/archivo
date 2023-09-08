@@ -376,3 +376,37 @@ func (api *API) rotateSrcSrvFile(c *fiber.Ctx) error {
 		Message: "done",
 	}))
 }
+
+func (api *API) storeCommonStatistics(c *fiber.Ctx) error {
+	srcsrvManager := sourceserver.NewSrvManager(
+		sourceserver.SrvConfig{
+			CorrelationId:   c.GetRespHeader(fiber.HeaderXRequestID),
+			StoreMode:       api.Config.FileStore.Mode,
+			DiskStoreConfig: sourceserver.DiskStoreConfig(api.Config.FileStore.DiskConfig),
+		},
+		sourceserver.NewSrvRepository(api.DB),
+	)
+
+	sourceServersCount, err := srcsrvManager.SourceServersCount()
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Internal server error")
+	}
+
+	filesForBackupCount, err := srcsrvManager.SourceServerFilesCount()
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Internal server error")
+	}
+
+	totalSnapshotOccupiedSize, err := srcsrvManager.TotalSnapshotsSize()
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Internal server error")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+		Data: map[string]interface{}{
+			"backup_files_count":     filesForBackupCount,
+			"source_servers_count":   sourceServersCount,
+			"snapshot_occupied_size": totalSnapshotOccupiedSize,
+		},
+	}))
+}

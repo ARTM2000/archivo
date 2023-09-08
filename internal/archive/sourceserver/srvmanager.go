@@ -53,6 +53,7 @@ type SnapshotList struct {
 	ID        uint32    `json:"id"`
 	Name      string    `json:"name"`
 	Size      string    `json:"size"`
+	ByteSize  int64     `json:"byte_size"`
 	Checksum  string    `json:"checksum"`
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -64,6 +65,19 @@ type StoreManager interface {
 	FilesList(srcSrvName string) ([]FileList, error)
 	SnapshotsList(srcSrvName, filename string) ([]SnapshotList, error)
 	ReadSnapshot(srcSrvName, filename, snapshot string) (*[]byte, error)
+}
+
+func ByteCountDecimal(b int64) string {
+	const unit = 1000
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(b)/float64(div), "KMGTPE"[exp])
 }
 
 func (sm *SrvManager) generateAPIKey() (string, error) {
@@ -93,6 +107,65 @@ func (sm *SrvManager) generateAPIKey() (string, error) {
 	apiKey = apiKey[:apiKeyLength]
 
 	return apiKey, nil
+}
+
+func (sm *SrvManager) SourceServersCount() (int64, error) {
+	count, err := sm.srvRepository.CountAllSourceServers()
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (sm *SrvManager) SourceServerFilesCount() (int64, error) {
+	sourceServers, err := sm.srvRepository.AllSourceServers()
+	if err != nil {
+		return 0, err
+	}
+
+	var totalFiles int64 = 0
+
+	storeManager := sm.getStoreManager()
+	for _, ss := range *sourceServers {
+		filesList, err := storeManager.FilesList(ss.Name)
+		if err != nil {
+			log.Default().Printf("error in getting filesList for server %s, error: %+v", ss.Name, err)
+			continue
+		}
+		totalFiles += int64(len(filesList))
+	}
+
+	return totalFiles, nil
+}
+
+func (sm *SrvManager) TotalSnapshotsSize() (string, error) {
+	sourceServers, err := sm.srvRepository.AllSourceServers()
+	if err != nil {
+		return "", err
+	}
+
+	var totalSnapshotsSize int64 = 0
+	storeManager := sm.getStoreManager()
+	for _, ss := range *sourceServers {
+		filesList, err := storeManager.FilesList(ss.Name)
+		if err != nil {
+			log.Default().Printf("error in getting filesList for server %s, error: %+v", ss.Name, err)
+			continue
+		}
+
+		for _, fl := range filesList {
+			snapshots, err := storeManager.SnapshotsList(ss.Name, fl.FileName)
+			if err != nil {
+				log.Default().Printf("error in getting snapshots for server '%s' on filename '%s', error: %+v", ss.Name, fl.FileName, err)
+				continue
+			}
+			for _, snp := range snapshots {
+				totalSnapshotsSize += snp.ByteSize
+			}
+		}
+	}
+
+	return ByteCountDecimal(totalSnapshotsSize), nil
 }
 
 func (sm *SrvManager) GetListOfAllSourceServers(option FindAllOption) (*[]SourceServer, int64, error) {
