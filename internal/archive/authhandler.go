@@ -39,6 +39,10 @@ type changeInitialPassword struct {
 	NewPassword     string `json:"new_password" validate:"required,password"`
 }
 
+type userActivityParams struct {
+	UserID uint `params:"userId" validate:"required,numeric"`
+}
+
 func (api *API) checkAdminExistence(c *fiber.Ctx) error {
 	userManger := auth.NewUserManager(auth.UserConfig{}, auth.NewUserRepository(api.DB))
 	adminExist, err := userManger.AdminExistenceCheck()
@@ -377,6 +381,57 @@ func (api *API) getAllUsersInformation(c *fiber.Ctx) error {
 		Data: map[string]interface{}{
 			"list":  users,
 			"total": totalUsers,
+		},
+	}))
+}
+
+func (api *API) getSingleUserActivities(c *fiber.Ctx) error {
+	var data listData
+	if err := c.QueryParser(&data); err != nil {
+		log.Default().Println(err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	if errs, ok := validate.ValidateStruct[listData](&data); !ok {
+		log.Default().Println(errs[0].Message)
+		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
+	}
+
+	params := userActivityParams{}
+	if err := c.ParamsParser(&params); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+	if errs, ok := validate.ValidateStruct[userActivityParams](&params); !ok {
+		log.Default().Println(errs[0].Message)
+		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
+	}
+
+	if data.Start == nil {
+		var initialStart = 0
+		data.Start = &initialStart
+	}
+	if data.End == nil {
+		var initialEnd = 10
+		data.End = &initialEnd
+	}
+
+	userActivityManager := auth.NewUserActivityManager(auth.NewUserActivityRepository(api.DB))
+	userActs, total, err := userActivityManager.GetListForSingleUser(params.UserID, auth.FindAllOption{
+		SortBy:    data.SortBy,
+		SortOrder: data.SortOrder,
+		Start:     *data.Start,
+		End:       *data.End,
+	})
+
+	if err != nil {
+		log.Default().Println("[Unhandled] error for finding all user activities", err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, "internal server error")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+		Data: map[string]interface{}{
+			"list":  userActs,
+			"total": total,
 		},
 	}))
 }

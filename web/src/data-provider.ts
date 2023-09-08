@@ -21,6 +21,9 @@ export const DataProvider: Partial<IDataProvider> = {
       if (params.sort.field === 'id')
         params.sort.field = params.meta.sort.DefaultBy;
     }
+    if (resource === 'user_activities') {
+      url = `/users/${params.meta.userId}/activities`;
+    }
 
     const { page, perPage } = params.pagination;
     const { field, order } = params.sort;

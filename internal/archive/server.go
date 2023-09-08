@@ -135,6 +135,7 @@ func runServer(c *Config) {
 			rtr.Use(api.authorizationMiddleware)
 			// admin only
 			rtr.Use(api.adminAuthorizationMiddleware)
+			rtr.Get("/:userId/activities", api.getSingleUserActivities)
 			rtr.Get("/", api.getAllUsersInformation)
 			rtr.Post("/register", api.registerUser)
 		})

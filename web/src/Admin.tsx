@@ -19,6 +19,7 @@ import { UserList } from './components/users/list';
 import { RegisterUser } from './components/users/register-user';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { ShowUserActivities } from './components/users/show-activites';
 
 export const AdminPanel = () => {
   const [perm, setPerm] = useState<PERMISSIONS>(PERMISSIONS.USER);
@@ -64,7 +65,9 @@ export const AdminPanel = () => {
           list={UserList}
           create={RegisterUser}
           icon={PeopleAltSharpIcon}
-        />
+        >
+          <Route path=":userId/:username/activities" element={<ShowUserActivities />} />
+        </Resource>
       )}
     </Admin>
   );

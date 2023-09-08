@@ -103,5 +103,12 @@ func (sr *SrvRepository) FindAllServers(option FindAllOption) (*[]SourceServer, 
 		return nil, 0, xerrors.ErrUnhandled
 	}
 
-	return &srvs, dbResult.RowsAffected, nil
+	var total int64
+	dbResult = sr.db.Model(&SourceServer{}).Count(&total)
+	if dbResult.Error != nil {
+		log.Default().Printf("[Unhandled] error in counting source servers, error: %s\n", dbResult.Error.Error())
+		return nil, 0, xerrors.ErrUnhandled
+	}
+
+	return &srvs, total, nil
 }
