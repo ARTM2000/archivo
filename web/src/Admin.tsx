@@ -66,7 +66,10 @@ export const AdminPanel = () => {
           create={RegisterUser}
           icon={PeopleAltSharpIcon}
         >
-          <Route path=":userId/:username/activities" element={<ShowUserActivities />} />
+          <Route
+            path=":userId/:username/activities"
+            element={<ShowUserActivities />}
+          />
         </Resource>
       )}
     </Admin>
