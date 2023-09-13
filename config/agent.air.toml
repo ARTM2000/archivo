@@ -3,7 +3,7 @@ testdata_dir = "testdata"
 tmp_dir = "tmp"
 
 [build]
-  args_bin = ["-c", "./example/_/.agent1.yaml"]
+  args_bin = ["-c", "./example/_/.agent.yaml"]
   bin = "./tmp/agent"
   cmd = "go build -o ./tmp/agent ./cmd/agent"
   delay = 0

@@ -1,4 +1,4 @@
-module github.com/ARTM2000/archive1
+module github.com/ARTM2000/archivo
 
 go 1.19
 

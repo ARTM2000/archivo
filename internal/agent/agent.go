@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ARTM2000/archive1/internal/config"
-	"github.com/ARTM2000/archive1/internal/processmng"
+	"github.com/ARTM2000/archivo/internal/config"
+	"github.com/ARTM2000/archivo/internal/processmng"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 )
@@ -59,7 +59,7 @@ var validateAgentCmd = &cobra.Command{
 
 var agentCmd = &cobra.Command{
 	Use:   "agent1",
-	Short: "Archive1 Agent to send specified files to Archive1 server",
+	Short: "Archivo Agent to send specified files to Archivo server",
 	Run: func(cmd *cobra.Command, _ []string) {
 		configPath, err := cmd.Flags().GetString("config")
 		if err != nil {

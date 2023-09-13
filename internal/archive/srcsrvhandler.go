@@ -7,9 +7,9 @@ import (
 	"mime/multipart"
 	"strings"
 
-	"github.com/ARTM2000/archive1/internal/archive/sourceserver"
-	"github.com/ARTM2000/archive1/internal/archive/xerrors"
-	"github.com/ARTM2000/archive1/internal/validate"
+	"github.com/ARTM2000/archivo/internal/archive/sourceserver"
+	"github.com/ARTM2000/archivo/internal/archive/xerrors"
+	"github.com/ARTM2000/archivo/internal/validate"
 	"github.com/gofiber/fiber/v2"
 )
 

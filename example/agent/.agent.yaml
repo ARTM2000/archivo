@@ -2,21 +2,21 @@
 # This file is a example of .agent1.yaml configuration
 ###
 
-# Address to target archive1 server which this agent should call
-archive1_server: "https://server.archive1.io"
+# Address to target archivo server which this agent should call
+archivo_server: "https://server.archivo.io"
 
-# Target archive1 name for this agent (oauth actions)
+# Target archivo name for this agent (oauth actions)
 agent_name: "example-agent"
 
-# Target archive1 key for this agent (oauth actions)
-agent_key: "thisismysampleapikeyfromarchive1"
+# Target archivo key for this agent (oauth actions)
+agent_key: "thisismysampleapikeyfromarchivo"
 
-# Files that agent1 should send to archive1 server to backup temporarily
+# Files that agent1 should send to archivo server to backup temporarily
 files:
   - filename: "file1-custom-name"
     path: "/absolute/path/to/file1"
     interval: "1 * * * *" # use crontab style to specify interval
-    rotate: 3 # backup counts on archive1 server. minimum is 1
+    rotate: 3 # backup counts on archivo server. minimum is 1
 
   - path: "/absolute/path/to/file2"
     interval: "@daily" # every day

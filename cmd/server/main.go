@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 
-	"github.com/ARTM2000/archive1/internal/archive"
+	"github.com/ARTM2000/archivo/internal/archive"
 )
 
 func main() {
-	log.Default().Println("[ Archive1 Server ]")
+	log.Default().Println("[ Archivo Server ]")
 	archive.CmdExecute()
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ARTM2000/archive1/web"
+	"github.com/ARTM2000/archivo/web"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
@@ -20,7 +20,7 @@ func runServer(c *Config) {
 	sConfig := fiber.Config{
 		CaseSensitive:                true,
 		ServerHeader:                 "none",
-		AppName:                      "Archive1",
+		AppName:                      "Archivo",
 		DisablePreParseMultipartForm: true,
 		DisableStartupMessage:        true,
 		ErrorHandler: func(c *fiber.Ctx, err error) error {

@@ -1,6 +1,6 @@
 package main
 
-import "github.com/ARTM2000/archive1/internal/agent"
+import "github.com/ARTM2000/archivo/internal/agent"
 
 func main() {
 	agent.CmdExecute()

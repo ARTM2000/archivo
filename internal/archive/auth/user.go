@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ARTM2000/archive1/internal/archive/xerrors"
+	"github.com/ARTM2000/archivo/internal/archive/xerrors"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )

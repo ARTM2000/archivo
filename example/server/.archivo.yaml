@@ -1,14 +1,14 @@
 ###
-# This file is a example of .archive1.yaml configuration
+# This file is a example of .archivo.yaml configuration
 ###
 
-# Archive1 server host (optional. default is 0.0.0.0)
+# Archivo server host (optional. default is 0.0.0.0)
 server_host: "0.0.0.0"
 
-# Archive1 server port (optional. default is 8010)
+# Archivo server port (optional. default is 8010)
 server_port: 8010
 
-# Archive1 postgres database configuration (required)
+# Archivo postgres database configuration (required)
 database:
   host: "127.0.0.1"
   port: 5432
@@ -17,7 +17,7 @@ database:
   timezone: "Asia/Tehran"
   ssl_mode: false
   ## database name
-  dbname: "archive1"
+  dbname: "archivo"
 
 auth:
   jwt_secret: "<CHANGE-JWT-SECRET>"
@@ -27,4 +27,4 @@ auth:
 file_store:
   mode: "disk"
   disk_config:
-    path: "/usr/archive1"
+    path: "/usr/archivo"

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ARTM2000/archive1/internal/archive/xerrors"
+	"github.com/ARTM2000/archivo/internal/archive/xerrors"
 )
 
 func NewUserActivityManager(userActivityRepo UserActivityRepository) userActivityManager {

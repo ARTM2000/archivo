@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ARTM2000/archive1/internal/config"
+	"github.com/ARTM2000/archivo/internal/config"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 )
@@ -21,8 +21,8 @@ func archiveConfigPreProcess(configPath string) {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		log.Default().Printf("no config file path received. looking at '%s' for '.archive1.yaml'", home)
-		finalConfigFile = filepath.Join(home, ".archive1.yaml")
+		log.Default().Printf("no config file path received. looking at '%s' for '.archivo.yaml'", home)
+		finalConfigFile = filepath.Join(home, ".archivo.yaml")
 	}
 	// check that finalConfigFile exists or not
 	if _, err := os.Stat(finalConfigFile); os.IsNotExist(err) {
@@ -34,7 +34,7 @@ func archiveConfigPreProcess(configPath string) {
 		log.Fatalf("error on reading configuration: %s", err.Error())
 	}
 
-	log.Default().Println("archive1 configuration:", parsedConfig.String())
+	log.Default().Println("archivo configuration:", parsedConfig.String())
 	// validate received config
 	if err := parsedConfig.Validate(); err != nil {
 		log.Fatalf(err.Error())
@@ -45,7 +45,7 @@ func archiveConfigPreProcess(configPath string) {
 
 var validateCmd = &cobra.Command{
 	Use:   "validate",
-	Short: "Validate Archive1 configuration",
+	Short: "Validate Archivo configuration",
 	Run: func(cmd *cobra.Command, _ []string) {
 		configPath, err := cmd.Flags().GetString("config")
 		if err != nil {
@@ -56,8 +56,8 @@ var validateCmd = &cobra.Command{
 }
 
 var archiveCmd = &cobra.Command{
-	Use:   "archive1",
-	Short: "Archive1 server to store all agents files",
+	Use:   "archivo",
+	Short: "Archivo server to store all agents files",
 	Run: func(cmd *cobra.Command, _ []string) {
 		configPath, err := cmd.Flags().GetString("config")
 		if err != nil {
@@ -75,14 +75,14 @@ func init() {
 		"config",
 		"c",
 		"",
-		"archive1 server configuration (default is $HOME/.archive1.yaml)",
+		"archivo server configuration (default is $HOME/.archivo.yaml)",
 	)
 
 	validateCmd.Flags().StringP(
 		"config",
 		"c",
 		"",
-		"archive1 server configuration (default is $HOME/.archive1.yaml)",
+		"archivo server configuration (default is $HOME/.archivo.yaml)",
 	)
 }
 

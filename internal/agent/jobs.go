@@ -21,7 +21,7 @@ func registerCronJobs(config *Config) (*cron.Cron, error) {
 		log.Default().Printf("register cron for file '%s' with interval '%s'\n", file.Path, file.Interval)
 		_, err := c.AddFunc(file.Interval, func() {
 			log.Default().Printf("running job for file '%s'", file.Path)
-			err := sendFileToArchive1Server(config.ArchiveServer, config.AgentName, config.AgentKey, &file)
+			err := sendFileToArchivoServer(config.ArchiveServer, config.AgentName, config.AgentKey, &file)
 			if err != nil {
 				log.Default().Printf("job fails. file: %s, error: [%s]", file.String(), err.Error())
 			}
@@ -35,7 +35,7 @@ func registerCronJobs(config *Config) (*cron.Cron, error) {
 	return c, nil
 }
 
-func sendFileToArchive1Server(server string, name string, key string, file *File) error {
+func sendFileToArchivoServer(server string, name string, key string, file *File) error {
 	client := &http.Client{}
 	correlationId := uuid.New().String()
 

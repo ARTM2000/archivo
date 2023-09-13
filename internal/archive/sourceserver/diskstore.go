@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ARTM2000/archive1/internal/archive/xerrors"
+	"github.com/ARTM2000/archivo/internal/archive/xerrors"
 )
 
 type metaData struct {

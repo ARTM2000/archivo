@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ARTM2000/archive1/internal/validate"
+	"github.com/ARTM2000/archivo/internal/validate"
 )
 
 type Database struct {

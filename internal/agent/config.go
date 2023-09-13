@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ARTM2000/archive1/internal/validate"
+	"github.com/ARTM2000/archivo/internal/validate"
 	"github.com/robfig/cron/v3"
 )
 
@@ -52,7 +52,7 @@ func (f *File) Validate() error {
 }
 
 type Config struct {
-	ArchiveServer string `mapstructure:"archive1_server" json:"archive1_server" validate:"required,url"`
+	ArchiveServer string `mapstructure:"archivo_server" json:"archivo_server" validate:"required,url"`
 	AgentName     string `mapstructure:"agent_name" json:"agent_name" validate:"required"`
 	AgentKey      string `mapstructure:"agent_key" json:"-" validate:"required"`
 	Files         []File `mapstructure:"files" json:"files" validate:"required,min=1,dive"`

@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/ARTM2000/archive1/internal/archive/xerrors"
+	"github.com/ARTM2000/archivo/internal/archive/xerrors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
