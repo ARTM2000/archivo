@@ -77,7 +77,7 @@ func ByteCountDecimal(b int64) string {
 		div *= unit
 		exp++
 	}
-	return fmt.Sprintf("%.1f %cB", float64(b)/float64(div), "KMGTPE"[exp])
+	return fmt.Sprintf("%.2f %cB", float64(b)/float64(div), "KMGTPE"[exp])
 }
 
 func (sm *SrvManager) generateAPIKey() (string, error) {
@@ -164,7 +164,7 @@ func (sm *SrvManager) TotalSnapshotsSize() (string, error) {
 			}
 		}
 	}
-
+	log.Default().Println(totalSnapshotsSize)
 	return ByteCountDecimal(totalSnapshotsSize), nil
 }
 
