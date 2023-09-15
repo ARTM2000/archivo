@@ -36,10 +36,10 @@ func ServeDashboard(c *fiber.Ctx) error {
 	uiFS := getFS()
 	path := c.Path()
 
-	if path == ServePath || path == fmt.Sprintf("%s/", ServePath) {
+	if path == ServePath || path == fmt.Sprintf("%s/", ServePath) || !strings.Contains(path, ".") {
 		path = "index.html"
 	}
-	path = strings.TrimPrefix(path, "/panel/")
+	path = strings.TrimPrefix(path, fmt.Sprintf("%s/", ServePath))
 
 	file, err := uiFS.Open(path)
 	if err != nil {
