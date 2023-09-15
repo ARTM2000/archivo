@@ -23,8 +23,8 @@ func agentConfigPreProcess(configPath string) {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		log.Default().Printf("no config file path received. looking at '%s' for '.agent1.yaml'", home)
-		finalConfigFile = filepath.Join(home, ".agent1.yaml")
+		log.Default().Printf("no config file path received. looking at '%s' for '.agent.yaml'", home)
+		finalConfigFile = filepath.Join(home, ".agent.yaml")
 	}
 	// check that finalConfigFile exists or not
 	if _, err := os.Stat(finalConfigFile); os.IsNotExist(err) {
@@ -36,7 +36,7 @@ func agentConfigPreProcess(configPath string) {
 		log.Fatalf("error on reading configuration: %s", err.Error())
 	}
 
-	log.Default().Println("agent1 configuration:", parsedConfig.String())
+	log.Default().Println("agent configuration:", parsedConfig.String())
 	// validate received config
 	if err := parsedConfig.Validate(); err != nil {
 		log.Fatalf(err.Error())
@@ -47,7 +47,7 @@ func agentConfigPreProcess(configPath string) {
 
 var validateAgentCmd = &cobra.Command{
 	Use:   "validate",
-	Short: "Validate Agent1 configuration",
+	Short: "Validate Archivo Agent configuration",
 	Run: func(cmd *cobra.Command, _ []string) {
 		configPath, err := cmd.Flags().GetString("config")
 		if err != nil {
@@ -87,14 +87,14 @@ func init() {
 		"config",
 		"c",
 		"",
-		"path of agent1 config yaml file (default to $HOME/.agent1.yaml)",
+		"path of agent1 config yaml file (default to $HOME/.agent.yaml)",
 	)
 
 	validateAgentCmd.Flags().StringP(
 		"config",
 		"c",
 		"",
-		"path of agent1 config yaml file (default to $HOME/.agent1.yaml)",
+		"path of agent1 config yaml file (default to $HOME/.agent.yaml)",
 	)
 }
 

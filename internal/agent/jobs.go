@@ -17,11 +17,12 @@ import (
 
 func registerCronJobs(config *Config) (*cron.Cron, error) {
 	c := cron.New(cron.WithLogger(cron.DefaultLogger))
-	for _, file := range config.Files {
+	for i := range config.Files {
+		file := &config.Files[i]
 		log.Default().Printf("register cron for file '%s' with interval '%s'\n", file.Path, file.Interval)
 		_, err := c.AddFunc(file.Interval, func() {
 			log.Default().Printf("running job for file '%s'", file.Path)
-			err := sendFileToArchivoServer(config.ArchiveServer, config.AgentName, config.AgentKey, &file)
+			err := sendFileToArchivoServer(config.ArchiveServer, config.AgentName, config.AgentKey, file)
 			if err != nil {
 				log.Default().Printf("job fails. file: %s, error: [%s]", file.String(), err.Error())
 			}
@@ -35,11 +36,11 @@ func registerCronJobs(config *Config) (*cron.Cron, error) {
 	return c, nil
 }
 
-func sendFileToArchivoServer(server string, name string, key string, file *File) error {
+func sendFileToArchivoServer(server, name, key string, file *File) error {
 	client := &http.Client{}
 	correlationId := uuid.New().String()
 
-	log.Default().Printf("request-id:'%s', target-file: '%s'\n", correlationId, file.Path)
+	log.Default().Printf("request-id:'%s', target-file: '%+v'\n", correlationId, file)
 
 	// read file
 	f, err := os.Open(file.Path)
