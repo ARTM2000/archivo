@@ -16,7 +16,7 @@ type User struct {
 	Email                 string         `gorm:"type:string;not null;unique" json:"email"`
 	HashedPassword        string         `gorm:"type:string;not null" json:"-"`
 	IsAdmin               bool           `gorm:"type:bool;not null;default:false" json:"is_admin"`
-	ChangeInitialPassword bool           `gorm:"type:bool;not null;default:true" json:"change_initial_password"`
+	ChangeInitialPassword bool           `gorm:"type:bool;not null;" json:"change_initial_password"`
 	LastLoginAt           time.Time      `gorm:"type:time;" json:"last_login_at"`
 	CreatedAt             time.Time      `gorm:"autoUpdateTime:milli" json:"created_at"`
 	UpdatedAt             time.Time      `gorm:"autoUpdateTime:milli" json:"updated_at"`
