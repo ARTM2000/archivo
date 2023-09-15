@@ -1,0 +1,9 @@
+./**/_
+.vscode
+build
+config
+example
+docs
+tmp
+web/node_modules
+web/dist

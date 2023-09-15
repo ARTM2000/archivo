@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+  archivo:
+    container_name: archivo_local
+    depends_on:
+      - postgres
+    build:
+      context: .
+      dockerfile: ${PWD}/deployments/Dockerfile.archivo
+      network: host
+    ports:
+      - 80:8010
+    volumes:
+      - ${PWD}/example/_/.archivo.yaml:/home/archivo/.archivo.yaml
+      - archivo_disk:/usr/share/archivo/store
+    networks:
+      - archivo
+
+  postgres:
+    image: postgres:15
+    container_name: archivo_db
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
+      - POSTGRES_DB=${DB_NAME:-archivo}
+    volumes:
+      - archivo_db:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime
+    networks:
+      - archivo
+
+networks:
+  archivo:
+
+volumes:
+  archivo_db:
+  archivo_disk:

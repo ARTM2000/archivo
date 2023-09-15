@@ -20,7 +20,7 @@ format:
 	@gofmt -l -s -w . && go mod tidy
 
 deploy_compose_dbonly:
-	@docker-compose -f ./deployments/docker-compose.dbonly.yaml up
+	@docker-compose -f ./docker-compose.dbonly.yaml up
 
 release_archivo:
 	@bash ./scripts/build_dashboard.bash ${DASHBOARD_BASE_API} && bash ./scripts/build_cli.bash archivo ${PWD}/cmd/server/main.go
