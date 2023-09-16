@@ -10,6 +10,11 @@ Archivo is created to be the final way of __archiving__ files, especially __conf
   - [How to use?](#how-to-use)
     - [Run _archivo_ server](#run-archivo-server)
     - [Run _agent_](#run-agent)
+    - [File Management](#file-management)
+    - [Register new user](#register-new-user)
+    - [User activities](#user-activities)
+  - [Support](#support)
+  - [Contributing](#contributing)
 
 
 ## How it works?
@@ -95,4 +100,35 @@ You can validate your configuration with the following command:
 ./agent validate -c /absolute/path/config/.agent.yml
 ```
 
-if everything goes successful, it will start to send files to archivo server
+If everything goes successful, it will start to send files to archivo server.
+
+### File Management
+In Archivo Panel, by click on each source server in the list you can see your files as below:
+![Source Server Files](docs/server-files.png)
+
+By selecting each file, you can access the list of file's snapshots and download any as you want:
+![File Snapshots](docs/file-snapshots.png)
+
+On each row, you can see this information for each snapshot that explained as below:
+| Fields     | Description                                                                                              |
+| ---------- | -------------------------------------------------------------------------------------------------------- |
+| Name       | Each snapshot will name by the combination of date and time                                              |
+| Size       | Snapshot size on disk                                                                                    |
+| Checksum   | Snapshot checksum that is file sha256 hash and can be use to determine that file has been changed or not |
+| Created at | Time that snapshot created                                                                               |
+
+### Register new user
+Currently, only admin user can register new user. Each user has an initial password that admin sets for them. At first login, each non-admin user will asked for password change and that new password will be use the user in panel.
+![Users List](docs/users-list.png)
+
+### User activities
+The only difference between admin and non-admin users is registering new user and listing user activities in panel. 
+![User Activities](docs/user-activities.png)
+
+## Support
+Feel free to [open an issue](https://github.com/artm2000/archivo/issues/new) if you have questions, run into bugs, or have a feature request.
+
+## Contributing
+Contributions are welcome!
+
+
