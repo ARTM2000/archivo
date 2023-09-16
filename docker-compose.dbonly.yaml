@@ -2,8 +2,8 @@ version: '3.9'
 
 services:
   postgres:
-    image: postgres:14
-    container_name: archive1_db_dbonly
+    image: postgres:15
+    container_name: archivo_db_dbonly
     ports:
       - "8011:5432"
     environment:
@@ -12,8 +12,8 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
       - POSTGRES_DB=${DB_NAME:-archive1}
     volumes:
-      - archive1_dbonly_v:/var/lib/postgresql/data
+      - archivo_dbonly_v:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime
 
 volumes:
-  archive1_dbonly_v:
+  archivo_dbonly_v:
