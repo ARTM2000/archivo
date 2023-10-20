@@ -100,6 +100,7 @@ func runServer(c *Config) {
 	})
 
 	app.Route("/api/v1", func(router fiber.Router) {
+		router.Get("/metrics", api.allSrvMetrics)
 		router.Route("/pre-auth", func(rt fiber.Router) {
 			rt.Use(api.preDashboardAuthorizationMiddleware)
 			rt.Post("/change-user-initial-pass", api.changeUserInitialPassword)

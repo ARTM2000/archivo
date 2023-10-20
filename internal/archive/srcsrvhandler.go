@@ -6,6 +6,7 @@ import (
 	"log"
 	"mime/multipart"
 	"strings"
+	"time"
 
 	"github.com/ARTM2000/archivo/internal/archive/sourceserver"
 	"github.com/ARTM2000/archivo/internal/archive/xerrors"
@@ -407,6 +408,26 @@ func (api *API) storeCommonStatistics(c *fiber.Ctx) error {
 			"backup_files_count":     filesForBackupCount,
 			"source_servers_count":   sourceServersCount,
 			"snapshot_occupied_size": totalSnapshotOccupiedSize,
+		},
+	}))
+}
+
+func (api *API) allSrvMetrics(c *fiber.Ctx) error {
+	now := time.Now()
+	srvMetrics := sourceserver.NewSrcSrvMetrics()
+
+	metrics := srvMetrics.AllBucketsAsMetrics(now.Add(-30 * time.Second), now)
+	if metrics != nil {
+		return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+			Data: map[string]interface{}{
+				"metrics": metrics,
+			},
+		}))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+		Data: map[string]interface{}{
+			"metrics": []interface{}{},
 		},
 	}))
 }

@@ -252,7 +252,20 @@ func (sm *SrvManager) getStoreManager() StoreManager {
 }
 
 func (sm *SrvManager) RotateFile(srcSrv *SourceServer, rotate int, fileName string, file *multipart.FileHeader) error {
+	srvMetrics := NewSrcSrvMetrics()
 	storeManager := sm.getStoreManager()
+	isOperationSuccessful := false
+
+	// in order to monitor operation status
+	defer func() {
+		log.Default().Println("here in count defer ...")
+		status := FailOperation;
+		if isOperationSuccessful {
+			status = SuccessOperation
+		}
+		srvMetrics.CountOperation(srcSrv.Name, status)
+	}()
+
 	// make sure of final filename
 	fnFilename := fileName
 	if strings.TrimSpace(fnFilename) == "" {
@@ -309,6 +322,7 @@ func (sm *SrvManager) RotateFile(srcSrv *SourceServer, rotate int, fileName stri
 		return err
 	}
 
+	isOperationSuccessful = true
 	return nil
 }
 
