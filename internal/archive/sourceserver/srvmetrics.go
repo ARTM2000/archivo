@@ -41,8 +41,8 @@ const (
 )
 
 type BucketDetail struct {
-	SuccessCount int64
-	FailCount    int64
+	SuccessCount int64 `json:"success_count"`
+	FailCount    int64 `json:"fail_count"`
 }
 
 type Bucket struct {
@@ -92,7 +92,7 @@ func rotateStoredBuckets(rotateTime time.Duration) {
 	if rotateTime == 0 {
 		rotateTime = defaultBucketStoreSize
 	}
-	
+
 	lastTime := time.Now().Add(-1 * rotateTime)
 
 	mu.Lock()
