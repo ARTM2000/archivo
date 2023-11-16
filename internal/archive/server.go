@@ -100,7 +100,6 @@ func runServer(c *Config) {
 	})
 
 	app.Route("/api/v1", func(router fiber.Router) {
-		router.Get("/metrics", api.allSrvMetrics)
 		router.Route("/pre-auth", func(rt fiber.Router) {
 			rt.Use(api.preDashboardAuthorizationMiddleware)
 			rt.Post("/change-user-initial-pass", api.changeUserInitialPassword)
@@ -143,7 +142,9 @@ func runServer(c *Config) {
 
 		router.Route("/dashboard", func(rtr fiber.Router) {
 			rtr.Use(api.authorizationMiddleware)
-			rtr.Get("/common-metrics", api.storeCommonStatistics)
+			rtr.Get("/metrics/common", api.storeCommonStatistics)
+			rtr.Get("/metrics/activities", api.allSrvMetrics)
+			rtr.Get("/metrics/activities/single-server", api.singleSrvMetrics)
 		})
 	}, "APIv1")
 

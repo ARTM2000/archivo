@@ -45,6 +45,16 @@ type downloadSnapshotData struct {
 	Snapshot string `params:"snapshot" validate:"required"`
 }
 
+type timeWindow struct {
+	From int64 `query:"from" validate:"required,number"`
+	To   int64 `query:"to" validate:"required,number"`
+}
+
+type srvTimeWindow struct {
+	timeWindow
+	SrvName string `query:"srv_name" validate:"required"`
+}
+
 func (api *API) getListOfSourceServers(c *fiber.Ctx) error {
 	var data listData
 	if err := c.QueryParser(&data); err != nil {
@@ -413,10 +423,62 @@ func (api *API) storeCommonStatistics(c *fiber.Ctx) error {
 }
 
 func (api *API) allSrvMetrics(c *fiber.Ctx) error {
-	now := time.Now()
+	var timeDetail timeWindow
+	if err := c.QueryParser(&timeDetail); err != nil {
+		log.Default().Println(err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+	if errs, ok := validate.ValidateStruct[timeWindow](&timeDetail); !ok {
+		log.Default().Println(errs[0].Message)
+		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
+	}
+
+	if timeDetail.From >= timeDetail.To {
+		return fiber.NewError(fiber.StatusUnprocessableEntity, xerrors.ErrToTimeShouldBeAfterFromTime.Error())
+	}
+
+	fromTime := time.UnixMilli(timeDetail.From)
+	toTime := time.UnixMilli(timeDetail.To)
+
 	srvMetrics := sourceserver.NewSrcSrvMetrics()
 
-	metrics := srvMetrics.AllBucketsAsMetrics(now.Add(-30 * time.Second), now)
+	metrics := srvMetrics.AllBucketsAsMetrics(fromTime, toTime)
+	if metrics != nil {
+		return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+			Data: map[string]interface{}{
+				"metrics": metrics,
+			},
+		}))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
+		Data: map[string]interface{}{
+			"metrics": []interface{}{},
+		},
+	}))
+}
+
+func (api *API) singleSrvMetrics(c *fiber.Ctx) error {
+	var searchData srvTimeWindow
+	if err := c.QueryParser(&searchData); err != nil {
+		log.Default().Println(err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+	if errs, ok := validate.ValidateStruct[srvTimeWindow](&searchData); !ok {
+		log.Default().Println(errs[0].Message)
+		return fiber.NewError(fiber.StatusUnprocessableEntity, errs[0].Message)
+	}
+
+	if searchData.From >= searchData.To {
+		return fiber.NewError(fiber.StatusUnprocessableEntity, xerrors.ErrToTimeShouldBeAfterFromTime.Error())
+	}
+
+	fromTime := time.UnixMilli(searchData.From)
+	toTime := time.UnixMilli(searchData.To)
+
+	srvMetrics := sourceserver.NewSrcSrvMetrics()
+
+	metrics := srvMetrics.SingleSrvBucketsAsMetrics(searchData.SrvName, fromTime, toTime)
 	if metrics != nil {
 		return c.Status(fiber.StatusOK).JSON(FormatResponse(c, Data{
 			Data: map[string]interface{}{

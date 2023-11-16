@@ -13,7 +13,7 @@ export const Dashboard = () => {
 
   const getCommonMetrics = () => {
     setCommonLoading(true);
-    HttpAgent.get('/dashboard/common-metrics')
+    HttpAgent.get('/dashboard/metrics/common')
       .then((res) => {
         const data = res.data as {
           data: {

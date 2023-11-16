@@ -7,18 +7,30 @@ import (
 	"time"
 )
 
-const defaultBucketDurationSize = 5 * time.Second
+const defaultBucketDurationSize = 5 * time.Second // default is 5 seconds
+const defaultBucketStoreSize = 3 * 24 * time.Hour // default is 3 days
 
 var buckets []Bucket = []Bucket{}
 var mu sync.Mutex
 
 func init() {
-	createEmptyBucket()
+	createEmptyBucket(defaultBucketDurationSize)
 	go func() {
 		ticker := time.NewTicker(defaultBucketDurationSize)
 		for {
 			<-ticker.C
-			createEmptyBucket()
+			createEmptyBucket(defaultBucketDurationSize)
+		}
+	}()
+
+	go func() {
+		storeTimer := time.NewTimer(defaultBucketStoreSize)
+		storeTicker := time.NewTicker(defaultBucketDurationSize)
+		<-storeTimer.C
+		log.Default().Println("start rotating....")
+		for {
+			<-storeTicker.C
+			rotateStoredBuckets(defaultBucketStoreSize)
 		}
 	}()
 }
@@ -56,8 +68,15 @@ func NewSrcSrvMetrics() *srcSrvMetrics {
 
 type srcSrvMetrics struct{}
 
-func createEmptyBucket() {
+func createEmptyBucket(timeSpan time.Duration) {
+	if timeSpan == 0 {
+		timeSpan = defaultBucketDurationSize
+	}
 	now := time.Now()
+
+	mu.Lock()
+	defer mu.Unlock()
+
 	initialDetail := []BucketDetail{}
 	initialSrvAddress := map[string]int{}
 	bucket := Bucket{
@@ -67,6 +86,25 @@ func createEmptyBucket() {
 		SrvAddress: initialSrvAddress,
 	}
 	buckets = append(buckets, bucket)
+}
+
+func rotateStoredBuckets(rotateTime time.Duration) {
+	if rotateTime == 0 {
+		rotateTime = defaultBucketStoreSize
+	}
+	
+	lastTime := time.Now().Add(-1 * rotateTime)
+
+	mu.Lock()
+	defer mu.Unlock()
+
+	for {
+		i := 0
+		if lastTime.Before(buckets[i].To) {
+			break
+		}
+		buckets = buckets[i+1:]
+	}
 }
 
 func (ssm *srcSrvMetrics) filterBucketsByTime(from, to time.Time) (b []Bucket) {
@@ -83,11 +121,11 @@ func (ssm *srcSrvMetrics) formatBuckets(bcs []Bucket) []BucketReport {
 	bcr := []BucketReport{}
 	for _, bc := range bcs {
 		br := BucketReport{
-			From: bc.From,
-			To: bc.To,
+			From:         bc.From,
+			To:           bc.To,
 			TotalSuccess: bc.TotalSuccess,
-			TotalFail: bc.TotalFail,
-			Details: map[string]BucketDetail{},
+			TotalFail:    bc.TotalFail,
+			Details:      map[string]BucketDetail{},
 		}
 		for k, v := range bc.SrvAddress {
 			br.Details[k] = bc.Details[v]
@@ -118,31 +156,39 @@ func (ssm *srcSrvMetrics) CountOperation(sourceServerName string, status int) {
 
 	if status == SuccessOperation {
 		buckets[bucketLength-1].Details = append(buckets[bucketLength-1].Details, BucketDetail{SuccessCount: 1})
-		buckets[bucketLength-1].TotalSuccess = 1
+		atomic.AddInt64(&buckets[bucketLength-1].TotalSuccess, 1)
 	} else {
 		buckets[bucketLength-1].Details = append(buckets[bucketLength-1].Details, BucketDetail{FailCount: 1})
-		buckets[bucketLength-1].TotalFail = 1
+		atomic.AddInt64(&buckets[bucketLength-1].TotalFail, 1)
 	}
 	buckets[bucketLength-1].SrvAddress[sourceServerName] = len(lastBucket.Details)
 }
 
-func (ssm *srcSrvMetrics) SingleSrvBucketsAsMetrics(sourceServerName string, from, to time.Time) (srvBuckets []Bucket) {
-	for _, b := range ssm.filterBucketsByTime(from, to) {
-		sAddrs, exist := b.SrvAddress[sourceServerName]
-		if !exist {
+func (ssm *srcSrvMetrics) SingleSrvBucketsAsMetrics(sourceServerName string, from, to time.Time) []BucketReport {
+	buckets := ssm.filterBucketsByTime(from, to)
+	for i, b := range buckets {
+		index := i
+		sAddr, exists := b.SrvAddress[sourceServerName]
+		if !exists {
+			// if source server not exists in bucket, clear any unrelated data
+			buckets[index].TotalSuccess = 0
+			buckets[index].TotalFail = 0
+			buckets[index].SrvAddress = nil
+			buckets[index].Details = []BucketDetail{}
 			continue
 		}
-		sBucket := b.Details[sAddrs]
-		srb := Bucket{
-			From:         b.From,
-			To:           b.To,
-			TotalSuccess: sBucket.SuccessCount,
-			TotalFail:    sBucket.FailCount,
-		}
-		srvBuckets = append(srvBuckets, srb)
-	}
 
-	return srvBuckets
+		sBucket := buckets[index].Details[sAddr]
+		buckets[index].TotalSuccess = sBucket.SuccessCount
+		buckets[index].TotalFail = sBucket.FailCount
+		buckets[index].SrvAddress = map[string]int{
+			sourceServerName: 0,
+		}
+		buckets[index].Details = []BucketDetail{
+			sBucket,
+		}
+	}
+	return ssm.formatBuckets(buckets)
 }
 
 func (ssm *srcSrvMetrics) AllBucketsAsMetrics(from, to time.Time) []BucketReport {

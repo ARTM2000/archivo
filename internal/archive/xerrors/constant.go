@@ -20,4 +20,5 @@ var (
 	ErrNoFileStoredOnSourceServerByThisName  = errors.New("no file stores on source server by this filename")
 	ErrSnapshotNotFound                      = errors.New("unable to locate this snapshot")
 	ErrUserInitialPasswordHasBeenChanged     = errors.New("user initial password has been changed")
+	ErrToTimeShouldBeAfterFromTime           = errors.New("to time should be after from time")
 )
