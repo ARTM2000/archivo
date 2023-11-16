@@ -50,7 +50,9 @@ export const Dashboard = () => {
     <Box sx={{ marginTop: '20px' }}>
       <Title title={'Dashboard'} />
       <Box sx={{ flexGrow: 1, margin: '0 20px' }}>
-        <Grid container justifyContent={'left'} alignItems={'end'}></Grid>
+        <Grid container justifyContent={'left'} alignItems={'end'}>
+          {/* todo: add an selector for changing chart interval or generally information update interval */}
+        </Grid>
         <ActivityChart currentChartInterval={CHART_INTERVAL[4]} />
         <Grid container spacing={4} justifyContent={'center'}>
           <MetricInfo
