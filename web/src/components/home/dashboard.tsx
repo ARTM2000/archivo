@@ -3,6 +3,10 @@ import { useEffect, useState } from 'react';
 import { HttpAgent } from '../../utils/http-agent';
 import { toast } from 'react-toastify';
 import { Title } from 'react-admin';
+import {
+  ActivityChart,
+  CHART_INTERVAL,
+} from '../activity-chart/activity-chart';
 
 export const Dashboard = () => {
   const [backupFileCount, setBackupFileCount] = useState<number>(0);
@@ -46,6 +50,8 @@ export const Dashboard = () => {
     <Box sx={{ marginTop: '20px' }}>
       <Title title={'Dashboard'} />
       <Box sx={{ flexGrow: 1, margin: '0 20px' }}>
+        <Grid container justifyContent={'left'} alignItems={'end'}></Grid>
+        <ActivityChart currentChartInterval={CHART_INTERVAL[4]} />
         <Grid container spacing={4} justifyContent={'center'}>
           <MetricInfo
             title="Total source servers"
@@ -79,8 +85,8 @@ const MetricInfo = (props: { title: string; value: any; loading: boolean }) => {
         justifyContent={'center'}
         alignContent={'center'}
         sx={{
-          backgroundColor: 'whitesmoke',
-          boxShadow: '0 0 20px #bcd2f5',
+          backgroundColor: 'white',
+          boxShadow: '0 3px 8px #bcd2f5',
           borderRadius: '8px',
           padding: '15px',
         }}
