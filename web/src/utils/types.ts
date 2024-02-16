@@ -5,7 +5,7 @@ export type ArchiveResponse<T = any> = {
   data: T;
 };
 
-export type ChartInterval = {
+export type ChartRange = {
   title: string;
   duration: number;
 };

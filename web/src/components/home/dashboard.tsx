@@ -3,10 +3,7 @@ import { useEffect, useState } from 'react';
 import { HttpAgent } from '../../utils/http-agent';
 import { toast } from 'react-toastify';
 import { Title } from 'react-admin';
-import {
-  ActivityChart,
-  CHART_INTERVAL,
-} from '../activity-chart/activity-chart';
+import { ActivityChart } from '../activity-chart/activity-chart';
 
 export const Dashboard = () => {
   const [backupFileCount, setBackupFileCount] = useState<number>(0);
@@ -50,10 +47,7 @@ export const Dashboard = () => {
     <Box sx={{ marginTop: '20px' }}>
       <Title title={'Dashboard'} />
       <Box sx={{ flexGrow: 1, margin: '0 20px' }}>
-        <Grid container justifyContent={'left'} alignItems={'end'}>
-          {/* todo: add an selector for changing chart interval or generally information update interval */}
-        </Grid>
-        <ActivityChart currentChartInterval={CHART_INTERVAL[4]} />
+        <ActivityChart />
         <Grid container spacing={4} justifyContent={'center'}>
           <MetricInfo
             title="Total source servers"

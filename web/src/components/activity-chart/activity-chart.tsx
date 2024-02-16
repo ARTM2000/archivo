@@ -12,7 +12,8 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { HttpAgent } from '../../utils/http-agent';
-import { ChartData, ChartInterval, ChartMetric } from '../../utils/types';
+import { ChartData, ChartRange, ChartMetric } from '../../utils/types';
+import { CHART_RANGE, RangePicker } from './interval-picker';
 
 ChartJS.register(
   CategoryScale,
@@ -40,72 +41,32 @@ export const options = {
       beginAtZero: true,
       ticks: {
         stepSize: 1,
-      }
+      },
     },
   },
 };
 
-export const CHART_INTERVAL: ChartInterval[] = [
-  {
-    title: '30 seconds',
-    duration: 30 * 1000,
-  },
-  {
-    title: '1 minute',
-    duration: 60 * 1000,
-  },
-  {
-    title: '2 minutes',
-    duration: 2 * 60 * 1000,
-  },
-  {
-    title: '5 minutes',
-    duration: 5 * 60 * 1000,
-  },
-  {
-    title: '10 minutes',
-    duration: 10 * 60 * 1000,
-  },
-  {
-    title: '30 minutes',
-    duration: 30 * 60 * 1000,
-  },
-  {
-    title: '1 hour',
-    duration: 60 * 60 * 1000,
-  },
-  {
-    title: '2 hours',
-    duration: 2 * 60 * 60 * 1000,
-  },
-  {
-    title: '6 hours',
-    duration: 6 * 60 * 60 * 1000,
-  },
-];
-
-export const ActivityChart = (props: {
-  currentChartInterval: ChartInterval;
-  sourceServerName?: string;
-}) => {
-  const { currentChartInterval, sourceServerName } = props;
+export const ActivityChart = (props: { sourceServerName?: string }) => {
+  const { sourceServerName } = props;
 
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [chartLabels, setChartLabels] = useState<string[]>([]);
   const [chartUpdateInterval, setChartUpdateInterval] = useState(5000);
+  const [currentChartRange, setCurrentChartRange] =
+    useState<ChartRange>(CHART_RANGE[4]);
 
   const formatChartData = (
     metrics: ChartMetric[],
   ): { data: ChartData[]; labels: string[] } => {
     const finalData: ChartData[] = [
       {
-        label: 'Failed',
+        label: 'Fail',
         borderColor: '#c40606',
         backgroundColor: '#c40606',
         data: [],
       },
       {
-        label: 'Successful',
+        label: 'Success',
         borderColor: '#16c406',
         backgroundColor: '#16c406',
         data: [],
@@ -158,7 +119,7 @@ export const ActivityChart = (props: {
     };
   };
 
-  const fetchAllChartData = (chartInterval: ChartInterval) => {
+  const fetchAllChartData = (chartRange: ChartRange) => {
     const now = new Date();
 
     const params: {
@@ -167,7 +128,7 @@ export const ActivityChart = (props: {
       srv_name?: string;
     } = {
       to: now.valueOf(),
-      from: new Date(now.valueOf() - chartInterval.duration).valueOf(),
+      from: new Date(now.valueOf() - chartRange.duration).valueOf(),
     };
     let url = '/dashboard/metrics/activities';
 
@@ -198,18 +159,24 @@ export const ActivityChart = (props: {
 
   useEffect(() => {
     const interval = setInterval(
-      () => fetchAllChartData(currentChartInterval),
+      () => fetchAllChartData(currentChartRange),
       chartUpdateInterval,
     );
     return () => clearInterval(interval);
-  }, [currentChartInterval]);
+  }, [currentChartRange]);
 
   useEffect(() => {
-    fetchAllChartData(currentChartInterval);
+    fetchAllChartData(currentChartRange);
   }, []);
 
   return (
     <Grid container justifyContent={'center'} spacing={4}>
+      <RangePicker
+        currentRange={currentChartRange}
+        setCurrentRange={(intrvl: ChartRange) =>
+          setCurrentChartRange(intrvl)
+        }
+      />
       <Grid item xs={12}>
         <Box
           component={'div'}
