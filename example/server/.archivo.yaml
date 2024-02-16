@@ -27,4 +27,4 @@ auth:
 file_store:
   mode: "disk"
   disk_config:
-    path: "/usr/archivo"
+    path: "/usr/share/archivo/store"

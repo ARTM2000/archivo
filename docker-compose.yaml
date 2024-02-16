@@ -2,14 +2,14 @@ version: '3.9'
 
 services:
   archivo:
-    image: ghcr.io/artm2000/archivo:v1.1.0
+    image: ghcr.io/artm2000/archivo:v1.2.0
     container_name: archivo
     depends_on:
       - postgres
     ports:
       - 80:8010
     volumes:
-      - ${PWD}/example/_/.archivo.yaml:/home/archivo/.archivo.yaml
+      - ${PWD}/example/_/.archivo.yaml:/.archivo.yaml
       - archivo_disk:/usr/share/archivo/store
     networks:
       - archivo
